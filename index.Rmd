@@ -1,0 +1,56 @@
+---
+title: "text2vec"
+author: "Dmitriy Selivanov"
+output:
+  html_document:
+    toc: false
+    toc_float: false
+---
+
+你刚刚发现了 **[text2vec](https://github.com/dselivanov/text2vec)**!
+
+**text2vec** 这个 R 包提供了高性能和简洁的 API 来进行文本分析、自然语言处理。
+
+<!--is an R package which provides an efficient framework with a concise API for text analysis and natural language processing (NLP). -->
+
+为了实现下面的目标，我们开发了 `text2vec`：
+
+<!--Goals which we aimed to achieve as a result of development of `text2vec`:-->
+
+<!--* **Concise** - expose as few functions as possible
+* **Consistent** - expose unified interfaces, no need to explore new interface for each task
+* **Flexible** - allow to easily solve complex tasks
+* **Fast** - maximize efficiency per single thread, transparently scale to multiple threads on multicore machines
+* **Memory efficient** - use streams and iterators, not keep data in RAM if possible-->
+
++ **简洁** - 暴露尽可能少的函数
++ **统一** - 暴露统一的接口，不需要为了每一个任务而探索新的接口
++ **灵活** - 允许很容易地解决复杂的任务
++ **快速** - 最高效地利用每一个进程的，透明地在多核机器上扩容到多进程。
++ **内存高效** - 使用流和迭代器，尽可能减少内存中的数据。
+
+<!--See [API](api.html) section for details.-->
+
+查看 [API](api.html) 章节来了解更多内容。
+
+<!--# Performance-->
+
+# 性能
+
+![htop](images/htop.png)
+
+<!--*Author of the package is a little bit obsessed about efficiency.*-->
+
+作者十分关注这个包的性能！
+
+<!--This package is efficient because it is carefully written in C++, which also means that text2vec is memory friendly. Some parts (such as GloVe) are fully parallelized using the excellent [RcppParallel](http://rcppcore.github.io/RcppParallel/) package. This means that the word embeddings are computed in parallel on OS X, Linux, Windows, and even Solaris (x86) without any additional tuning or tricks.-->
+
+因为这个包核心代码是使用 C++ 来写的，它的性能很好，同时内存效率也很高。一些函数（比如 GloVe）使用了出色的 [RcppParallel](http://rcppcore.github.io/RcppParallel/) 包来实现并行计算。在 OS X, Linux, Windows, 和 Solaris (x86) 上，不需要设置就可以并行地计算词向量。
+
+<!--Other emrassingly parallel tasks (such as vectorization) can use any parallel backend which supports [foreach](https://cran.r-project.org/package=foreach) package. They can achieve near-linear scalability with number of available cores.-->
+
+其他一些并行任务比如向量化（vectorization），可以使用 [foreach](https://cran.r-project.org/package=foreach) 等包来实现并行。他们可以实现近似线性的多核扩展。
+
+<!--Finally, a streaming API means that  users do not have to load all the data into RAM.-->
+
+最后，流（streaming）API 让用户不需要把所有数据读入内存中。
