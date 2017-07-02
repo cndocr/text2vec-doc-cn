@@ -2,31 +2,55 @@
 title: "Vectorization"
 author: "Dmitriy Selivanov"
 date: "`r Sys.Date()`"
-output: 
+output:
   html_document:
     toc_depth: 2
 ---
+
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, eval = TRUE)
 ```
 
-# Text analysis pipeline
+<!--# Text analysis pipeline-->
 
-Most text mining and NLP modeling use [bag of words](https://en.wikipedia.org/wiki/Bag-of-words_model) or [bag of n-grams](https://en.wikipedia.org/wiki/N-gram) methods. Despite their simplicity, these models usually demonstrate good performance on text categorization and classification tasks. But in contrast to their theoretical simplicity and practical efficiency building bag-of-words models involves technical challenges. This is especially the case in R because of its copy-on-modify semantics. 
+# 文本分析工作流
 
-Let's briefly review some of the steps in a typical text analysis pipeline:  
+<!--Most text mining and NLP modeling use [bag of words](https://en.wikipedia.org/wiki/Bag-of-words_model) or [bag of n-grams](https://en.wikipedia.org/wiki/N-gram) methods. Despite their simplicity, these models usually demonstrate good performance on text categorization and classification tasks. But in contrast to their theoretical simplicity and practical efficiency building bag-of-words models involves technical challenges. This is especially the case in R because of its copy-on-modify semantics.-->
 
-1. The researcher usually begins by constructing a [document-term matrix](https://en.wikipedia.org/wiki/Document-term_matrix) (DTM) or term-co-occurrence  matrix (TCM) from input documents. In other words, the first step is to  vectorize text by creating a map from words or n-grams to a [vector space](https://en.wikipedia.org/wiki/Vector_space_model).
-2. The researcher fits a model to that DTM. These models might include text classification, topic modeling, similarity search, etc. Fitting the model will include tuning and validating the model.
-3. Finally the researcher applies the model to new data.
+大多数文本挖掘和自然语言建模使用 [bag of words](https://en.wikipedia.org/wiki/Bag-of-words_model) 或者 [bag of n-grams](https://en.wikipedia.org/wiki/N-gram) 方法。即使它们很简单，这些模型通常在文本分类任务有较好的效果。虽然这些模型的理论很简单，构建高效率的 bag-of-words 模型需要面对很多技术上的问题。对于 R 来说，R 的在修改时复制（copy-on-modify）的特点，会影响到模型构建效率。
 
-In this vignette we will primarily discuss the first step. Texts themselves can take up a lot of memory, but vectorized texts usually do not, because they are stored as sparse matrices. Because of R's copy-on-modify semantics, it is not easy to iteratively grow a DTM. Thus constructing a DTM, even for a small collections of documents, can be a serious bottleneck for analysts and researchers. It involves reading the whole collection of text documents into RAM and processing it as single vector, which can easily increase memory use by a factor of 2 to 4. The *text2vec* package solves this problem by providing a better way of constructing a document-term matrix.
+<!--Let's briefly review some of the steps in a typical text analysis pipeline:-->
 
-Let's demonstrate package core functionality by applying it to a real case problem - sentiment analysis.
+让我们来简单回顾文本分析工作流的常见步骤：
 
-*text2vec* package provides the `movie_review` dataset. It consists of 5000 movie reviews, each of which is marked as positive or negative. We will also use the [data.table](https://cran.r-project.org/package=data.table) package for data wrangling.
+<!--1. The researcher usually begins by constructing a [document-term matrix](https://en.wikipedia.org/wiki/Document-term_matrix) (DTM) or term-co-occurrence  matrix (TCM) from input documents. In other words, the first step is to  vectorize text by creating a map from words or n-grams to a [vector space](https://en.wikipedia.org/wiki/Vector_space_model).-->
+<!--2. The researcher fits a model to that DTM. These models might include text classification, topic modeling, similarity search, etc. Fitting the model will include tuning and validating the model.-->
+<!--3. Finally the researcher applies the model to new data.-->
 
-First of all let's split out dataset into two parts - *train* and *test*. We will show how to perform data manipulations on *train* set and then apply exactly the same manipulations on the *test* set:
+1. 研究者从输入文本构建 [document-term matrix](https://en.wikipedia.org/wiki/Document-term_matrix) (DTM) 或者 term-co-occurrence matrix (TCM)。或者说，第一步是构建一个映射，将词或者 n-gram 映射到一个[向量空间（vector space）](https://en.wikipedia.org/wiki/Vector_space_model)。
+
+2. 研究者拟合 DTM 模型，这些模型可以是文本分类模型，主题模型，相似性研究等等。拟合模型的过程包括调优和验证模型。
+
+3. 最后研究者将模型运用在新数据上。
+
+<!-- In this vignette we will primarily discuss the first step. Texts themselves can take up a lot of memory, but vectorized texts usually do not, because they are stored as sparse matrices. Because of R's copy-on-modify semantics, it is not easy to iteratively grow a DTM. Thus constructing a DTM, even for a small collections of documents, can be a serious bottleneck for analysts and researchers. It involves reading the whole collection of text documents into RAM and processing it as single vector, which can easily increase memory use by a factor of 2 to 4. The *text2vec* package solves this problem by providing a better way of constructing a document-term matrix. -->
+
+在本文中，我们将会主要讨论第一个步骤。文本数据常需要大量的内存来储存，而文本向量却不需要，因为文本向量市稀疏矩阵。因为 R 的修改时复制的属性，交互式地构建一个 DTM 并不容易，构建一小部分集合的文档也需要花费很多时间。这涉及到将整个集合大文本读入到内存中，将它们处理成为一个独立的向量，这个步骤需要使用 2 到 4 倍文本容量的内存。
+
+text2vec 包提供了一个比上述方法更好的解决方案来处理 document-term matrix。
+
+<!-- Let's demonstrate package core functionality by applying it to a real case problem - sentiment analysis. -->
+
+让我们来用一个实际的例子来演示包的核心功能 - 情感分析。
+
+<!-- *text2vec* package provides the `movie_review` dataset. It consists of 5000 movie reviews, each of which is marked as positive or negative. We will also use the [data.table](https://cran.r-project.org/package=data.table) package for data wrangling. -->
+
+*text2vec* 包提供了 `movie_review` 数据集，它包含 5000 个电影评论，每个评论被标记为正面或者负面。我们将会使用 [data.table](https://cran.r-project.org/package=data.table) 包来预处理数据。
+
+<!-- First of all let's split out dataset into two parts - *train* and *test*. We will show how to perform data manipulations on *train* set and then apply exactly the same manipulations on the *test* set: -->
+
+首先将数据分成两部分，训练集和测试集，我们将会展示怎么样在训练集和测试集上面进行同样的数据操作。
+
 
 ```{r, loading-data, message=FALSE}
 library(text2vec)
@@ -42,38 +66,52 @@ train = movie_review[J(train_ids)]
 test = movie_review[J(test_ids)]
 ```
 
-# Vectorization
+# 向量化
 
-To represent documents in vector space, we first have to create mappings from terms to term IDS. We call them *terms* instead of *words* because they can be arbitrary n-grams not just single words. We represent a set of documents as a sparse matrix, where each row corresponds to a document and each column corresponds to a term. This can be done in 2 ways: using the vocabulary itself or by [feature hashing](https://en.wikipedia.org/wiki/Feature_hashing).
+<!-- To represent documents in vector space, we first have to create mappings from terms to term IDS. We call them *terms* instead of *words* because they can be arbitrary n-grams not just single words. We represent a set of documents as a sparse matrix, where each row corresponds to a document and each column corresponds to a term. This can be done in 2 ways: using the vocabulary itself or by [feature hashing](https://en.wikipedia.org/wiki/Feature_hashing). -->
 
-## Vocabulary-based vectorization
+为了在向量空间里面展示文档，我们首先需要生成多个字段（terms）到字段（term）的 IDS。我们把他们叫做字段而不是词（words），是因为他们可以是任意 n-gram 而不仅仅是单个词。我们将一个集合的文档表示为稀疏矩阵，每一行代表一个文档，每一列代表一个 term。可以用两种方法来处理文本，使用词汇表本身，或者使用 [feature hashing](https://en.wikipedia.org/wiki/Feature_hashing)。
 
-Let's first create a vocabulary-based DTM. Here we collect unique terms from all documents and mark each of them with a unique ID using the `create_vocabulary()` function. We use an iterator to create the vocabulary.
+<!-- ## Vocabulary-based vectorization -->
+
+## 基于词汇表的向量表
+
+<!-- Let's first create a vocabulary-based DTM. Here we collect unique terms from all documents and mark each of them with a unique ID using the `create_vocabulary()` function. We use an iterator to create the vocabulary. -->
+
+让我们先来生成一个基于词汇表的 DTM。我们从所有文档中收集独立的字段，使用 `create_vocabulary()` 将每一个词用一个独立的ID 来进行标记。
 
 ```{r, vocab-iterator, message=FALSE}
-# define preprocessing function and tokenization fucntion
+# 定义预处理函数以及 tokenization 函数
 prep_fun = tolower
 tok_fun = word_tokenizer
 
-it_train = itoken(train$review, 
-             preprocessor = prep_fun, 
-             tokenizer = tok_fun, 
-             ids = train$id, 
+it_train = itoken(train$review,
+             preprocessor = prep_fun,
+             tokenizer = tok_fun,
+             ids = train$id,
              progressbar = FALSE)
 vocab = create_vocabulary(it_train)
 ```
-What was done here?
 
-1. We created an iterator over tokens with the `itoken()` function. All functions prefixed with `create_` work with these iterators. R users might find this idiom unusual, but the iterator abstraction allows us to hide most of details about input and to process data in memory-friendly chunks.
-2. We built the vocabulary with the `create_vocabulary()` function.
+<!-- What was done here? -->
 
-Alternatively, we could create list of tokens and reuse it in further steps. Each element of the list should represent a document, and each element should be a character vector of tokens.
+这里完成了什么？
+
+<!-- 1. We created an iterator over tokens with the `itoken()` function. All functions prefixed with `create_` work with these iterators. R users might find this idiom unusual, but the iterator abstraction allows us to hide most of details about input and to process data in memory-friendly chunks. -->
+<!-- 2. We built the vocabulary with the `create_vocabulary()` function. -->
+
+1. 使用 `itoken()` 对 tokens 生成一个迭代器。所有包含 `create_` 前缀的函数都能处理这些迭代区。R 用户可能会觉得这类模型不是很常见，但是迭代器允许我们隐藏输入的大部分的细节，并以内存友好的方式来处理数据。
+2. 我们使用 `create_vocabulary()` 函数构建一个词汇表。
+
+<!-- Alternatively, we could create list of tokens and reuse it in further steps. Each element of the list should represent a document, and each element should be a character vector of tokens. -->
+
+或者我们能够生成一列 tokens，然后在后续的步骤中重用他们。列表里面的每个元素代表一个文档，每个元素为一个包含 tokens 的文本向量。
 
 ```{r}
-train_tokens = train$review %>% 
-  prep_fun %>% 
+train_tokens = train$review %>%
+  prep_fun %>%
   tok_fun
-it_train = itoken(train_tokens, 
+it_train = itoken(train_tokens,
                   ids = train$id,
                   # turn off progressbar because it won't look nice in rmd
                   progressbar = FALSE)
@@ -82,9 +120,13 @@ vocab = create_vocabulary(it_train)
 vocab
 ```
 
-Note that *text2vec* provides a few tokenizer functions (see `?tokenizers`). These are just simple wrappers for the `base::gsub()` function and are not very fast or flexible. If you need something smarter or faster you can use the [tokenizers](https://cran.r-project.org/package=tokenizers) package which will cover most use cases, or write your own tokenizer using the [stringi](https://cran.r-project.org/package=stringi) package.
+<!-- Note that *text2vec* provides a few tokenizer functions (see `?tokenizers`). These are just simple wrappers for the `base::gsub()` function and are not very fast or flexible. If you need something smarter or faster you can use the [tokenizers](https://cran.r-project.org/package=tokenizers) package which will cover most use cases, or write your own tokenizer using the [stringi](https://cran.r-project.org/package=stringi) package. -->
 
-Now that we have a vocabulary, we can construct a document-term matrix.
+注意到 *text2vec* 提供了一些 tokenizer 函数（见`?tokenizers`），这些函数是 `base::gsub()` 的简单接口，他们的速度不是很快，如果你需要更加智能或者更快速的包，可以使用 [tokenizers](https://cran.r-project.org/package=tokenizers)。这个包可以满足绝大多数多使用需求。你还可以使用 [stringi](https://cran.r-project.org/package=stringi) 包来写你自己多 tokenizer。
+
+<!-- Now that we have a vocabulary, we can construct a document-term matrix. -->
+
+现在我们有了一个词汇表，我们接着来建立一个 document-term matrix。
 
 ```{r, vocab_dtm_1}
 vectorizer = vocab_vectorizer(vocab)
@@ -93,23 +135,29 @@ dtm_train = create_dtm(it_train, vectorizer)
 print(difftime(Sys.time(), t1, units = 'sec'))
 ```
 
-Now we have a DTM and can check its dimensions.
+<!-- Now we have a DTM and can check its dimensions. -->
+
+现在我们有了一个 DTM，我们可以查看他的维度。
 
 ```{r, vocab_dtm_1_dim}
 dim(dtm_train)
 identical(rownames(dtm_train), train$id)
 ```
 
-As you can see, the DTM has `r #dim(dtm_train)[[1]]` rows, equal to the number of documents, and `r #dim(dtm_train)[[2]]` columns, equal to the number of unique terms.
+<!-- As you can see, the DTM has `r #dim(dtm_train)[[1]]` rows, equal to the number of documents, and `r #dim(dtm_train)[[2]]` columns, equal to the number of unique terms. -->
 
-Now we are ready to fit our first model. Here we will use the [glmnet](https://cran.r-project.org/package=glmnet) package to fit a logistic regression model with an L1 penalty and 4 fold cross-validation.
+正如你所看到的，DTM 有 `r #dim(dtm_train)[[1]]` 行，和文档数一致， `r #dim(dtm_train)[[2]]` 列，与独立的字段数一致。
+
+<!-- Now we are ready to fit our first model. Here we will use the [glmnet](https://cran.r-project.org/package=glmnet) package to fit a logistic regression model with an L1 penalty and 4 fold cross-validation. -->
+
+现在我们准备拟合我们的第一个模型。这里我们将会使用 [glmnet](https://cran.r-project.org/package=glmnet) 包来拟合一个包含 L1 惩罚和 4 折交叉验证的模型。
 
 ```{r, fit_1, message=FALSE, warning=FALSE}
 library(glmnet)
 NFOLDS = 4
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['sentiment']], 
-                              family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['sentiment']],
+                              family = 'binomial',
                               # L1 penalty
                               alpha = 1,
                               # interested in the area under ROC curve
@@ -125,14 +173,20 @@ plot(glmnet_classifier)
 print(paste("max AUC =", round(max(glmnet_classifier$cvm), 4)))
 ```
 
-We have successfully fit a model to our DTM. Now we can check the model's performance on test data.
-Note that we use exactly the same functions from prepossessing and tokenization. Also we reuse/use the same `vectorizer` - function which maps terms to indices.
+<!-- We have successfully fit a model to our DTM. Now we can check the model's performance on test data. -->
+
+现在我们成功地将我们的 DTM 拟合了一个模型，现在我们需要在我们的测试集上检查模型的性能。
+
+<!-- Note that we use exactly the same functions from prepossessing and tokenization. Also we reuse/use the same `vectorizer` - function which maps terms to indices. -->
+
+注意到我们使用同样的函数来进行数据预处理和 tokenization。我们也冲用了同样的将字段转换为数字标记的 `vectorizer` 函数。
+
 ```{r, test_1, message=FALSE, warning=FALSE}
 # Note that most text2vec functions are pipe friendly!
-it_test = test$review %>% 
-  prep_fun %>% 
-  tok_fun %>% 
-  itoken(ids = test$id, 
+it_test = test$review %>%
+  prep_fun %>%
+  tok_fun %>%
+  itoken(ids = test$id,
          # turn off progressbar because it won't look nice in rmd
          progressbar = FALSE)
 
@@ -144,13 +198,24 @@ glmnet:::auc(test$sentiment, preds)
 ```{r, echo=FALSE}
 rm(glmnet_classifier)
 ```
-As we can see, performance on the test data is roughly the same as we expect from cross-validation.
 
-### Pruning vocabulary
+<!-- As we can see, performance on the test data is roughly the same as we expect from cross-validation. -->
 
-We can note, however, that the training time for our model was quite high. We can reduce it and also significantly improve accuracy by pruning the vocabulary.
+正如我们看到的，测试集的结果和交叉检验的结果类似。
 
-For example, we can find words *"a", "the", "in", "I", "you", "on"*, etc in almost all documents, but they do not provide much useful information. Usually such words are called [stop words](https://en.wikipedia.org/wiki/Stop_words). On the other hand, the corpus also contains very uncommon terms, which are contained in only a few documents. These terms are also useless, because we don't have sufficient statistics for them. Here we will remove pre-defined stopwords, very common and very unusual terms.
+<!-- ### Pruning vocabulary -->
+
+### 修剪词汇表
+
+<!-- We can note, however, that the training time for our model was quite high. We can reduce it and also significantly improve accuracy by pruning the vocabulary. -->
+
+我们注意到模型的训练时间很长，我们能够通过修剪词汇表的方法来显著地提高模型的准确率。
+
+<!-- For example, we can find words *"a", "the", "in", "I", "you", "on"*, etc in almost all documents, but they do not provide much useful information. Usually such words are called [stop words](https://en.wikipedia.org/wiki/Stop_words). On the other hand, the corpus also contains very uncommon terms, which are contained in only a few documents. These terms are also useless, because we don't have sufficient statistics for them. Here we will remove pre-defined stopwords, very common and very unusual terms. -->
+
+比如，我们可以发现 *"a", "the", "in", "I", "you", "on"* 这些词在几乎所有的文档里都出现了，他们不能够提供很多大有效信息，一般我们称这些词汇为 [stop words](https://en.wikipedia.org/wiki/Stop_words)。另一方面，词汇表中包含一些很稀有的项，它们只在很少大文档中出现。这些项也是无用的，因为我们没有关于它们的足够的统计信息。
+
+在这里我们会移除预定义的停止词，一些常见的词以及一些很稀有的词。
 
 ```{r, prune_vocab_dtm_1}
 stop_words = c("i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours")
@@ -158,8 +223,8 @@ t1 = Sys.time()
 vocab = create_vocabulary(it_train, stopwords = stop_words)
 print(difftime(Sys.time(), t1, units = 'sec'))
 
-pruned_vocab = prune_vocabulary(vocab, 
-                                 term_count_min = 10, 
+pruned_vocab = prune_vocabulary(vocab,
+                                 term_count_min = 10,
                                  doc_proportion_max = 0.5,
                                  doc_proportion_min = 0.001)
 vectorizer = vocab_vectorizer(pruned_vocab)
@@ -171,25 +236,34 @@ print(difftime(Sys.time(), t1, units = 'sec'))
 dim(dtm_train)
 ```
 
-Note that the new DTM has many fewer columns than the original DTM. This usually leads to both accuracy improvement (because we removed "noise") and reduction of the training time.
+<!-- Note that the new DTM has many fewer columns than the original DTM. This usually leads to both accuracy improvement (because we removed "noise") and reduction of the training time. -->
 
-Also we need to create DTM for test data with the same vectorizer:
+注意到新生成的 DTM 比原有 DTM 包含更少的列，一般地这能够获得更高的准确率以及更快的训练速度。
+
+<!-- Also we need to create DTM for test data with the same vectorizer: -->
+
+我们还需要使用同样的 vectorizer 为测试集生成 DTM。
 
 ```{r, prune_vocab_dtm_1_test}
 dtm_test   = create_dtm(it_test, vectorizer)
 dim(dtm_test)
 ```
 
+<!-- ## N-grams -->
+
 ## N-grams
 
-Can we improve the model? Definitely - we can use n-grams instead of words. Here we will use up to 2-grams:
+<!-- Can we improve the model? Definitely - we can use n-grams instead of words. Here we will use up to 2-grams: -->
+
+我们能够改进我们的模型吗？当然可以，我们需要使用 n-grams 而不是词。这里我们使用 2-grams：
+
 ```{r, ngram_dtm_1}
 
 t1 = Sys.time()
 vocab = create_vocabulary(it_train, ngram = c(1L, 2L))
 print(difftime(Sys.time(), t1, units = 'sec'))
 
-vocab = vocab %>% prune_vocabulary(term_count_min = 10, 
+vocab = vocab %>% prune_vocabulary(term_count_min = 10,
                    doc_proportion_max = 0.5)
 
 bigram_vectorizer = vocab_vectorizer(vocab)
@@ -197,8 +271,8 @@ bigram_vectorizer = vocab_vectorizer(vocab)
 dtm_train = create_dtm(it_train, bigram_vectorizer)
 
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['sentiment']], 
-                 family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['sentiment']],
+                 family = 'binomial',
                  alpha = 1,
                  type.measure = "auc",
                  nfolds = NFOLDS,
@@ -210,7 +284,9 @@ plot(glmnet_classifier)
 print(paste("max AUC =", round(max(glmnet_classifier$cvm), 4)))
 ```
 
-Seems that usage of n-grams improved our model a little bit more. Let's check performance on test dataset:
+<!-- Seems that usage of n-grams improved our model a little bit more. Let's check performance on test dataset: -->
+
+注意到使用 n-grams 对我们的模型有一定的提升，让我们来看看测试集的结果。
 
 ```{r}
 # apply vectorizer
@@ -222,13 +298,23 @@ glmnet:::auc(test$sentiment, preds)
 rm(glmnet_classifier)
 ```
 
-Further tuning is left up to the reader.
+<!-- Further tuning is left up to the reader. -->
+
+读者可以对模型进行更进一步的调优。
+
+<!-- ## Feature hashing -->
 
 ## Feature hashing
 
-If you are not familiar with feature hashing (the so-called "hashing trick") I recommend you start with the [Wikipedia article](https://en.wikipedia.org/wiki/Feature_hashing), then read the [original paper](http://alex.smola.org/papers/2009/Weinbergeretal09.pdf) by a Yahoo! research team. This technique is very fast because we don't have to perform a lookup over an associative array. Another benefit is that it leads to a very low memory footprint, since we can map an arbitrary number of features into much more compact space. This method was popularized by Yahoo! and is widely used in [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/). 
+<!-- If you are not familiar with feature hashing (the so-called "hashing trick") I recommend you start with the [Wikipedia article](https://en.wikipedia.org/wiki/Feature_hashing), then read the [original paper](http://alex.smola.org/papers/2009/Weinbergeretal09.pdf) by a Yahoo! research team. This technique is very fast because we don't have to perform a lookup over an associative array. Another benefit is that it leads to a very low memory footprint, since we can map an arbitrary number of features into much more compact space. This method was popularized by Yahoo! and is widely used in [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/). -->
 
-Here is how to use feature hashing in *text2vec*.
+如果你对 Feature hashing 不熟悉，我推荐你从这篇 [Wikipedia 文章] (https://en.wikipedia.org/wiki/Feature_hashing) 来了解对应的信息，然后阅读 Yahoo!研究团队的[论文](http://alex.smola.org/papers/2009/Weinbergeretal09.pdf)。
+
+这个方法的效率很高，因为我们不需要对关联数组进行检索。这个方法的另外一个好处是它内存友好，因为我们可以将任意数量的特征映射到一个稠密的空间。这个方法被 Yahoo! 推广，并被广泛运用在 [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
+
+<!-- Here is how to use feature hashing in *text2vec*. -->
+
+这里是一个在 text2vec 中使用 feature hashing 的例子。
 
 ```{r, hash_dtm}
 h_vectorizer = hash_vectorizer(hash_size = 2 ^ 14, ngram = c(1L, 2L))
@@ -238,8 +324,8 @@ dtm_train = create_dtm(it_train, h_vectorizer)
 print(difftime(Sys.time(), t1, units = 'sec'))
 
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['sentiment']], 
-                             family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train, y = train[['sentiment']],
+                             family = 'binomial',
                              alpha = 1,
                              type.measure = "auc",
                              nfolds = 5,
@@ -256,55 +342,82 @@ preds = predict(glmnet_classifier, dtm_test , type = 'response')[, 1]
 glmnet:::auc(test$sentiment, preds)
 ```
 
-As you can see our AUC is a bit worse but DTM construction time is considerably lower. On large collections of documents this can be a significant advantage.
+<!-- As you can see our AUC is a bit worse but DTM construction time is considerably lower. On large collections of documents this can be a significant advantage. -->
 
-# Basic transformations
+正如你看到的，我们的 AUC 稍微差一些，但是 DTM 的训练时间有了明显的改善。
 
-Before doing analysis it usually can be useful to *transform* DTM. For example lengths of the documents in collection can significantly vary. In this case it can be useful to apply normalization.
+<!-- # Basic transformations -->
 
-## Normalization
+# 基本的变换
 
-By "normalization" we assume *transformation* of the *rows* of DTM so we adjust values measured on different scales to a notionally common scale. For the case when length of the documents vary we can apply "L1" normalization. It means we will transform rows in a way that `sum` of the row values will be equal to `1`:
+<!-- Before doing analysis it usually can be useful to *transform* DTM. For example lengths of the documents in collection can significantly vary. In this case it can be useful to apply normalization. -->
+
+在进行分析之前，我们一般都会对 DTM 进行一定的变换。比如，不同文档的长度会有很大的差别，在这个例子中，使用标准化（normalization）将会十分有意义。
+
+## 标准化
+
+<!-- By "normalization" we assume *transformation* of the *rows* of DTM so we adjust values measured on different scales to a notionally common scale. For the case when length of the documents vary we can apply "L1" normalization. It means we will transform rows in a way that `sum` of the row values will be equal to `1`: -->
+
+为了实现标准化，我们将 DTM 到将不同长度到文档调整到一个共同的尺度上。针对不同长度的文档，我们使用 L1 标准化，及将每一列的数值转换为和为 1 。
 
 ```{r}
 dtm_train_l1_norm = normalize(dtm_train, "l1")
 ```
 
-By this transformation we should improve the quality of data preparation.
+<!-- By this transformation we should improve the quality of data preparation. -->
+
+这个转换可以改进我们数据预处理的质量。
 
 ## TF-IDF
 
-Another popular technique is [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) transformation.
-We can (and usually should) apply it to our DTM. It will not only normalize DTM, but also increase the weight of terms which are specific to a single document or handful of documents and decrease the weight for terms used in most documents:
+<!-- Another popular technique is [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) transformation. -->
+
+另外一个流行的技术是 [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) 转换。
+
+<!-- We can (and usually should) apply it to our DTM. It will not only normalize DTM, but also increase the weight of terms which are specific to a single document or handful of documents and decrease the weight for terms used in most documents: -->
+
+我们可以将它运用在我们的 DTM 上，它不仅仅会标准化 DTM，提升针对某单个文档或者一类文档的字段的权重，降低常用字段的权重。
 
 ```{r, tfidf_dtm_1}
 vocab = create_vocabulary(it_train)
 vectorizer = vocab_vectorizer(vocab)
 dtm_train = create_dtm(it_train, vectorizer)
 
-# define tfidf model
+# 定义模型
 tfidf = TfIdf$new()
-# fit model to train data and transform train data with fitted model
+# 用训练数据拟合模型，并转换训练数据
 dtm_train_tfidf = fit_transform(dtm_train, tfidf)
-# tfidf modified by fit_transform() call!
-# apply pre-trained tf-idf transformation to test data
-dtm_test_tfidf  = create_dtm(it_test, vectorizer) %>% 
+# tfidf 会被 fit_transform() 修改
+# 将训练好的 tfidf 模型运用到测试数据上
+dtm_test_tfidf  = create_dtm(it_test, vectorizer) %>%
   transform(tfidf)
 ```
 
-Note that here we first time touched *model* object in *text2vec*. At this moment the user should remember several important things about *text2vec* models:
+<!-- Note that here we first time touched *model* object in *text2vec*. At this moment the user should remember several important things about *text2vec* models: -->
 
+注意到这里我们第一次在 *text2vec* 使用模型对象。现在用户可以了解 *text2vec* 模型的一些重要的属性：
+
+<!--
 1. Models can be fitted on a given data (train) and applied to unseen data (test)
 1. **Models are mutable** - once you will pass model to `fit()` or `fit_transform()` function, model will be modifed by it.
-1. After model is fitted, it can be applied to a new data with `transform(new_data, fitted_model)` method.
+1. After model is fitted, it can be applied to a new data with `transform(new_data, fitted_model)` method. -->
 
-More detailed overview of models and models API will be available soon in a separate vignette.
+1. 模型可以使用给定数据（训练集）来进行拟合，并将它运用到新的数据（测试集）上。
+1. **模型是可变的** 一旦你将模型传递给 `fit()` 或者 `fit_transform()` 函数，模型将会被修改。
+1. 一旦模型被拟合后，它可以使用  `transform(new_data, fitted_model)` 方法被运用到新的数据上。
 
-Once we have tf-idf reweighted DTM we can fit our linear classifier again:
+<!-- More detailed overview of models and models API will be available soon in a separate vignette. -->
+
+更多关于模型概述的细节以及模型的 API，可以在独立的 vignette 里面查看。
+
+<!-- Once we have tf-idf reweighted DTM we can fit our linear classifier again: -->
+
+一旦我们拥有使用 tf-idf 重新调整过的 DTM，我们可以重新拟合我们的线性分类器。
+
 ```{r, fit_2, message=FALSE, warning=FALSE}
 t1 = Sys.time()
-glmnet_classifier = cv.glmnet(x = dtm_train_tfidf, y = train[['sentiment']], 
-                              family = 'binomial', 
+glmnet_classifier = cv.glmnet(x = dtm_train_tfidf, y = train[['sentiment']],
+                              family = 'binomial',
                               alpha = 1,
                               type.measure = "auc",
                               nfolds = NFOLDS,
@@ -315,7 +428,10 @@ plot(glmnet_classifier)
 print(paste("max AUC =", round(max(glmnet_classifier$cvm), 4)))
 ```
 
-Let's check the model performance on the test dataset:
+<!-- Let's check the model performance on the test dataset: -->
+
+检查一下模型在测试集上的效果：
+
 ```{r}
 preds = predict(glmnet_classifier, dtm_test_tfidf, type = 'response')[,1]
 glmnet:::auc(test$sentiment, preds)
@@ -324,4 +440,6 @@ glmnet:::auc(test$sentiment, preds)
 rm(glmnet_classifier)
 ```
 
-Usually *tf-idf* transformation **significantly** improve performance on most of the dowstream tasks.
+<!-- Usually *tf-idf* transformation **significantly** improve performance on most of the dowstream tasks. -->
+
+一般来说，*tf-idf* 转换能够显著地改善绝大多数任务的结果。

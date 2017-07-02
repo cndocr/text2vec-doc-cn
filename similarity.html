@@ -11,7 +11,7 @@
 
 <meta name="author" content="Dmitriy Selivanov" />
 
-<meta name="date" content="2017-06-25" />
+<meta name="date" content="2017-07-02" />
 
 <title>Documents similarity</title>
 
@@ -360,7 +360,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Documents similarity</h1>
 <h4 class="author"><em>Dmitriy Selivanov</em></h4>
-<h4 class="date"><em>2017-06-25</em></h4>
+<h4 class="date"><em>2017-07-02</em></h4>
 
 </div>
 
@@ -483,15 +483,15 @@ dtm_tfidf_lsa =<span class="st"> </span><span class="kw">fit_transform</span>(dt
 <p>Calculate similarities between all rows of <code>dtm_tfidf_lsa</code> matrix:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_tfidf_cos_sim =<span class="st"> </span><span class="kw">sim2</span>(<span class="dt">x =</span> dtm_tfidf_lsa, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>)
 d1_d2_tfidf_cos_sim[<span class="dv">1</span>:<span class="dv">2</span>, <span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
-<pre><code>##           1         2         3          4          5
-## 1 1.0000000 0.1699813 0.3688867 0.32100186 0.40136610
-## 2 0.1699813 1.0000000 0.2255629 0.03386078 0.05705573</code></pre>
+<pre><code>##           1         2         3         4          5
+## 1 1.0000000 0.1699715 0.3688983 0.3209905 0.40136822
+## 2 0.1699715 1.0000000 0.2255630 0.0338627 0.05705758</code></pre>
 <p>And “parallel” similarities:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span>dtm_tfidf_lsa[<span class="dv">1</span>:<span class="dv">250</span>, ]
 y =<span class="st"> </span>dtm_tfidf_lsa[<span class="dv">251</span>:<span class="dv">500</span>, ]
 <span class="kw">head</span>(<span class="kw">psim2</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>))</code></pre></div>
 <pre><code>##          1          2          3          4          5          6 
-## 0.21684756 0.19825793 0.30500749 0.10041938 0.29249227 0.03675968</code></pre>
+## 0.21685059 0.19826088 0.30504565 0.10040222 0.29248788 0.03675778</code></pre>
 </div>
 </div>
 <div id="euclidean-distance" class="section level2">

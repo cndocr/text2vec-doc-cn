@@ -45,7 +45,7 @@ output:
 
 <!--This package is efficient because it is carefully written in C++, which also means that text2vec is memory friendly. Some parts (such as GloVe) are fully parallelized using the excellent [RcppParallel](http://rcppcore.github.io/RcppParallel/) package. This means that the word embeddings are computed in parallel on OS X, Linux, Windows, and even Solaris (x86) without any additional tuning or tricks.-->
 
-因为这个包核心代码是使用 C++ 来写的，它的性能很好，同时内存效率也很高。一些函数（比如 GloVe）使用了出色的 [RcppParallel](http://rcppcore.github.io/RcppParallel/) 包来实现并行计算。在 OS X, Linux, Windows, 和 Solaris (x86) 上，不需要设置就可以并行地计算词向量。
+因为这个包核心代码是使用 C++ 来写的，它的性能很好，同时内存效率也很高·。一些函数（比如 GloVe）使用了出色的 [RcppParallel](http://rcppcore.github.io/RcppParallel/) 包来实现并行计算。在 OS X, Linux, Windows, 和 Solaris (x86) 上，不需要设置就可以并行地计算词向量。
 
 <!--Other emrassingly parallel tasks (such as vectorization) can use any parallel backend which supports [foreach](https://cran.r-project.org/package=foreach) package. They can achieve near-linear scalability with number of available cores.-->
 
@@ -53,4 +53,4 @@ output:
 
 <!--Finally, a streaming API means that  users do not have to load all the data into RAM.-->
 
-最后，流（streaming）API 让用户不需要把所有数据读入内存中。
+最后，用户不需要把所有数据读入内存中，可以使用流（streaming）API 来处理数据。
