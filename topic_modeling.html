@@ -11,9 +11,9 @@
 
 <meta name="author" content="Dmitriy Selivanov" />
 
-<meta name="date" content="2017-07-02" />
+<meta name="date" content="2017-07-05" />
 
-<title>Topic modeling</title>
+<title>主题模型</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -358,9 +358,9 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Topic modeling</h1>
+<h1 class="title toc-ignore">主题模型</h1>
 <h4 class="author"><em>Dmitriy Selivanov</em></h4>
-<h4 class="date"><em>2017-07-02</em></h4>
+<h4 class="date"><em>2017-07-05</em></h4>
 
 </div>
 
@@ -368,7 +368,8 @@ div.tocify {
 <div id="latent-semantic-analysis" class="section level1">
 <h1>Latent Semantic Analysis</h1>
 <p>TODO</p>
-<p>As usual we will use built-in <code>text2vec::moview_review</code> dataset. Let’s clean it a little bit and create DTM:</p>
+<!-- As usual we will use built-in `text2vec::moview_review` dataset. Let's clean it a little bit and create DTM: -->
+<p>一般我们会使用内置的 <code>text2vec::moview_review</code> 数据集。让我们清理它一下，然后生成 DTM：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
 <span class="kw">library</span>(text2vec)
 <span class="kw">data</span>(<span class="st">&quot;movie_review&quot;</span>)
@@ -376,35 +377,37 @@ div.tocify {
 movie_review_test =<span class="st"> </span>movie_review[<span class="dv">501</span>:<span class="dv">1000</span>, ]
 movie_review_train =<span class="st"> </span>movie_review[<span class="dv">1</span>:<span class="dv">500</span>, ]
 prep_fun =<span class="st"> </span>function(x) {
-  x %&gt;%<span class="st"> </span>
+  x %&gt;%
 <span class="st">    </span><span class="co"># make text lower case</span>
-<span class="st">    </span>str_to_lower %&gt;%<span class="st"> </span>
+<span class="st">    </span>str_to_lower %&gt;%
 <span class="st">    </span><span class="co"># remove non-alphanumeric symbols</span>
-<span class="st">    </span><span class="kw">str_replace_all</span>(<span class="st">&quot;[^[:alnum:]]&quot;</span>, <span class="st">&quot; &quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">str_replace_all</span>(<span class="st">&quot;[^[:alnum:]]&quot;</span>, <span class="st">&quot; &quot;</span>) %&gt;%
 <span class="st">    </span><span class="co"># collapse multiple spaces</span>
 <span class="st">    </span><span class="kw">str_replace_all</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">s+&quot;</span>, <span class="st">&quot; &quot;</span>)
 }
 movie_review_train$review =<span class="st"> </span><span class="kw">prep_fun</span>(movie_review_train$review)
 it =<span class="st"> </span><span class="kw">itoken</span>(movie_review_train$review, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>)
-v =<span class="st"> </span><span class="kw">create_vocabulary</span>(it) %&gt;%<span class="st"> </span>
+v =<span class="st"> </span><span class="kw">create_vocabulary</span>(it) %&gt;%
 <span class="st">  </span><span class="kw">prune_vocabulary</span>(<span class="dt">doc_proportion_max =</span> <span class="fl">0.1</span>, <span class="dt">term_count_min =</span> <span class="dv">5</span>)
 vectorizer =<span class="st"> </span><span class="kw">vocab_vectorizer</span>(v)
 dtm =<span class="st"> </span><span class="kw">create_dtm</span>(it, vectorizer)</code></pre></div>
-<p>Now we will perform tf-idf scaling and the fit and apply LSA model:</p>
+<!-- Now we will perform tf-idf scaling and the fit and apply LSA model: -->
+<p>接着我们进行 tf-idf 转换，拟合模型，并进行 LSA 建模。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tfidf =<span class="st"> </span>TfIdf$<span class="kw">new</span>()
 lsa =<span class="st"> </span>LSA$<span class="kw">new</span>(<span class="dt">n_topics =</span> <span class="dv">10</span>)
 
 <span class="co"># pipe friendly transformation</span>
-dtm_tfidf_lsa =<span class="st"> </span>dtm %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">fit_transform</span>(tfidf) %&gt;%<span class="st"> </span>
+dtm_tfidf_lsa =<span class="st"> </span>dtm %&gt;%
+<span class="st">  </span><span class="kw">fit_transform</span>(tfidf) %&gt;%
 <span class="st">  </span><span class="kw">fit_transform</span>(lsa)</code></pre></div>
-<p>And we can elegantly apply exactly the same transformation to new data. Elegantly with “not-a-pipe” <code>%&gt;%</code>:</p>
+<!-- And we can elegantly apply exactly the same transformation to new data. Elegantly with "not-a-pipe" `%>%`: -->
+<p>我们可以优雅地使用在新数据上进行同样的转换。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">new_data =<span class="st"> </span>movie_review_test
-new_data_dtm_tfidf_lsa =<span class="st"> </span>
-<span class="st">  </span>new_data$review %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">itoken</span>(<span class="dt">preprocessor =</span> prep_fun, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">create_dtm</span>(vectorizer) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">transform</span>(tfidf) %&gt;%<span class="st"> </span>
+new_data_dtm_tfidf_lsa =
+<span class="st">  </span>new_data$review %&gt;%
+<span class="st">  </span><span class="kw">itoken</span>(<span class="dt">preprocessor =</span> prep_fun, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>) %&gt;%
+<span class="st">  </span><span class="kw">create_dtm</span>(vectorizer) %&gt;%
+<span class="st">  </span><span class="kw">transform</span>(tfidf) %&gt;%
 <span class="st">  </span><span class="kw">transform</span>(lsa)
 <span class="kw">head</span>(new_data_dtm_tfidf_lsa)</code></pre></div>
 <pre><code>##           [,1]        [,2]         [,3]         [,4]         [,5]
@@ -425,21 +428,21 @@ new_data_dtm_tfidf_lsa =<span class="st"> </span>
 <div id="latent-dirichlet-allocation" class="section level1">
 <h1>Latent Dirichlet Allocation</h1>
 <p>TODO</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tokens =<span class="st"> </span>movie_review$review %&gt;%<span class="st"> </span>
-<span class="st">  </span>tolower %&gt;%<span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tokens =<span class="st"> </span>movie_review$review %&gt;%
+<span class="st">  </span>tolower %&gt;%
 <span class="st">  </span>word_tokenizer
 <span class="co"># turn off progressbar because it won&#39;t look nice in rmd</span>
 it =<span class="st"> </span><span class="kw">itoken</span>(tokens, <span class="dt">ids =</span> movie_review$id, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>)
-v =<span class="st"> </span><span class="kw">create_vocabulary</span>(it) %&gt;%<span class="st"> </span>
+v =<span class="st"> </span><span class="kw">create_vocabulary</span>(it) %&gt;%
 <span class="st">  </span><span class="kw">prune_vocabulary</span>(<span class="dt">term_count_min =</span> <span class="dv">10</span>, <span class="dt">doc_proportion_max =</span> <span class="fl">0.2</span>)
 vectorizer =<span class="st"> </span><span class="kw">vocab_vectorizer</span>(v)
 dtm =<span class="st"> </span><span class="kw">create_dtm</span>(it, vectorizer, <span class="dt">type =</span> <span class="st">&quot;lda_c&quot;</span>)
 
-lda_model =<span class="st"> </span>
-<span class="st">  </span>LDA$<span class="kw">new</span>(<span class="dt">n_topics =</span> <span class="dv">10</span>, <span class="dt">vocabulary =</span> v, 
+lda_model =
+<span class="st">  </span>LDA$<span class="kw">new</span>(<span class="dt">n_topics =</span> <span class="dv">10</span>, <span class="dt">vocabulary =</span> v,
           <span class="dt">doc_topic_prior =</span> <span class="fl">0.1</span>, <span class="dt">topic_word_prior =</span> <span class="fl">0.01</span>)
-doc_topic_distr =<span class="st"> </span>
-<span class="st">  </span>lda_model$<span class="kw">fit_transform</span>(dtm, <span class="dt">n_iter =</span> <span class="dv">1000</span>, <span class="dt">convergence_tol =</span> <span class="fl">0.01</span>, 
+doc_topic_distr =
+<span class="st">  </span>lda_model$<span class="kw">fit_transform</span>(dtm, <span class="dt">n_iter =</span> <span class="dv">1000</span>, <span class="dt">convergence_tol =</span> <span class="fl">0.01</span>,
                           <span class="dt">check_convergence_every_n =</span> <span class="dv">10</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lda_model$<span class="kw">plot</span>()</code></pre></div>
 <head>

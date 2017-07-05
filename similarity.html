@@ -11,9 +11,9 @@
 
 <meta name="author" content="Dmitriy Selivanov" />
 
-<meta name="date" content="2017-07-02" />
+<meta name="date" content="2017-07-05" />
 
-<title>Documents similarity</title>
+<title>文档相似性</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -358,69 +358,86 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Documents similarity</h1>
+<h1 class="title toc-ignore">文档相似性</h1>
 <h4 class="author"><em>Dmitriy Selivanov</em></h4>
-<h4 class="date"><em>2017-07-02</em></h4>
+<h4 class="date"><em>2017-07-05</em></h4>
 
 </div>
 
 
-<div id="documents-similarity" class="section level1">
-<h1>Documents similarity</h1>
-<p>Document similarity (or distance between documents) is a one of the central themes in Information Retrieval. How humans usually define how similar are documents? Usually documents treated as similar if they are semantically close and describe similar concepts. On other hand “similarity” can be used in context of duplicate detection. We will review several common approaches.</p>
+<p># 文档相似性</p>
+<!-- Document similarity (or distance between documents) is a one of the central themes in Information Retrieval. -->
+<p>文档相似性或者文档间距离是信息提取任务的中心主题。</p>
+<!-- How humans usually define how similar are documents? Usually documents treated as similar if they are semantically close and describe similar concepts. On other hand "similarity" can be used in context of duplicate detection. We will review several common approaches. -->
+<p>人类是如何定义相似文本的？一般文本语义相近或者描述相似概念时被认为是相似的。另一方面，相似性还被用来进行重复性检验。我们将会回顾几个常见的例子。</p>
 <div id="api" class="section level2">
 <h2>API</h2>
-<p>text2vec package provides 2 set of functions for measuring various distances/similarity in a unified way. All methods are written with special attention to computational performance and memory efficiency.</p>
+<!-- text2vec package provides 2 set of functions for measuring various distances/similarity in a unified way. All methods are written with special attention to computational performance and memory efficiency. -->
+<p>text2vec 包提供了两套函数用来评价多种距离和相似性。所有函数都十分关注计算性能和内存的效率：</p>
+<!-- 1. `sim2(x, y, method)` - calculates similarity between **each row** of matrix `x` and **each row** of matrix `y` using given `method`.
+1. `psim2(x, y, method)` - calculates **p**arallel similarity between rows of matrix `x` and **corresponding** rows of matrix `y` using given `method.`
+1. `dist2(x, y, method)` - calculates distance/dissimilarity between **each row** of matrix `x` and **each row** of matrix `y` using given `method`.
+1. `pdist2(x, y, method)` - calculates **p**arallel distance/dissimilarity between rows of matrix `x` and **corresponding** rows of matrix `y` using given `method.` -->
 <ol style="list-style-type: decimal">
-<li><code>sim2(x, y, method)</code> - calculates similarity between <strong>each row</strong> of matrix <code>x</code> and <strong>each row</strong> of matrix <code>y</code> using given <code>method</code>.</li>
-<li><code>psim2(x, y, method)</code> - calculates <strong>p</strong>arallel similarity between rows of matrix <code>x</code> and <strong>corresponding</strong> rows of matrix <code>y</code> using given <code>method.</code></li>
-<li><code>dist2(x, y, method)</code> - calculates distance/dissimilarity between <strong>each row</strong> of matrix <code>x</code> and <strong>each row</strong> of matrix <code>y</code> using given <code>method</code>.</li>
-<li><code>pdist2(x, y, method)</code> - calculates <strong>p</strong>arallel distance/dissimilarity between rows of matrix <code>x</code> and <strong>corresponding</strong> rows of matrix <code>y</code> using given <code>method.</code></li>
+<li><code>sim2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的使用指定方法的相似性</li>
+<li><code>psim2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的并行相似性。</li>
+<li><code>dist2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的使用指定方法的距离</li>
+<li><code>dist2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的使用指定方法的并行距离</li>
 </ol>
-<p>Methods have siffix <code>2</code> in their names because in contrast to base <code>dist()</code> function they work with two matrces instead of one.</p>
-<p>Following methods are implemented at the moment:</p>
+<!-- Methods have siffix `2` in their names because in contrast to base `dist()` function they work with two matrces instead of one. -->
+<p>各个方法含有后缀 <code>2</code>，因为与 <code>dist()</code> 函数不同，这些函数作用在两个矩阵上，而不是一个矩阵上。</p>
+<!-- Following methods are implemented at the moment: -->
+<p>下面的方法已经实现了：</p>
 <ol style="list-style-type: decimal">
-<li><em>Jaccard distance</em></li>
-<li><em>Cosine distance</em></li>
-<li><em>Euclidean distance</em></li>
+<li><em>Jaccard 距离</em></li>
+<li><em>余弦距离</em></li>
+<li><em>欧式距离</em></li>
 <li><em>Relaxed Word Mover’s Distance</em></li>
 </ol>
 </div>
-</div>
-<div id="practical-examples" class="section level1">
-<h1>Practical examples</h1>
-<p>As usual we will use built-in <code>text2vec::moview_review</code> dataset. Let’s clean it a little bit:</p>
+<div class="section level1">
+<h1>实际例子</h1>
+<!-- As usual we will use built-in `text2vec::moview_review` dataset. Let's clean it a little bit: -->
+<p>使用 <code>text2vec::moview_review</code>，并对数据进行预处理：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
 <span class="kw">library</span>(text2vec)
 <span class="kw">data</span>(<span class="st">&quot;movie_review&quot;</span>)
 <span class="co"># select 500 rows for faster running times</span>
 movie_review =<span class="st"> </span>movie_review[<span class="dv">1</span>:<span class="dv">500</span>, ]
 prep_fun =<span class="st"> </span>function(x) {
-  x %&gt;%<span class="st"> </span>
+  x %&gt;%
 <span class="st">    </span><span class="co"># make text lower case</span>
-<span class="st">    </span>str_to_lower %&gt;%<span class="st"> </span>
+<span class="st">    </span>str_to_lower %&gt;%
 <span class="st">    </span><span class="co"># remove non-alphanumeric symbols</span>
-<span class="st">    </span><span class="kw">str_replace_all</span>(<span class="st">&quot;[^[:alnum:]]&quot;</span>, <span class="st">&quot; &quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">str_replace_all</span>(<span class="st">&quot;[^[:alnum:]]&quot;</span>, <span class="st">&quot; &quot;</span>) %&gt;%
 <span class="st">    </span><span class="co"># collapse multiple spaces</span>
 <span class="st">    </span><span class="kw">str_replace_all</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">s+&quot;</span>, <span class="st">&quot; &quot;</span>)
 }
 movie_review$review_clean =<span class="st"> </span><span class="kw">prep_fun</span>(movie_review$review)</code></pre></div>
-<p>Now let’s define two sets of documents on which we will evaluate our distance models:</p>
+<!-- Now let's define two sets of documents on which we will evaluate our distance models: -->
+<p>定义两个文档，并用来计算距离：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">doc_set_1 =<span class="st"> </span>movie_review[<span class="dv">1</span>:<span class="dv">300</span>, ]
 it1 =<span class="st"> </span><span class="kw">itoken</span>(doc_set_1$review_clean, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>)
 
 <span class="co"># specially take different number of docs in second set</span>
 doc_set_2 =<span class="st"> </span>movie_review[<span class="dv">301</span>:<span class="dv">500</span>, ]
 it2 =<span class="st"> </span><span class="kw">itoken</span>(doc_set_2$review_clean, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p>We will compare documents in a vector space. So we need to define common space and project documents to it. We will use vocabulary-based vectorization vectorization for better interpretability:</p>
+<!-- We will compare documents in a vector space. So we need to define common space and project documents to it. We will use vocabulary-based vectorization vectorization for better interpretability: -->
+<p>我们会在一个向量空间里比较文档，因此我们需要定义一个通用空间，并把文档映射过去。我们将会使用基于词汇表的向量化来获得更好的解释性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">it =<span class="st"> </span><span class="kw">itoken</span>(movie_review$review_clean, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>)
 v =<span class="st"> </span><span class="kw">create_vocabulary</span>(it) %&gt;%<span class="st"> </span><span class="kw">prune_vocabulary</span>(<span class="dt">doc_proportion_max =</span> <span class="fl">0.1</span>, <span class="dt">term_count_min =</span> <span class="dv">5</span>)
 vectorizer =<span class="st"> </span><span class="kw">vocab_vectorizer</span>(v)</code></pre></div>
 <div id="jaccard-similarity" class="section level2">
 <h2>Jaccard similarity</h2>
-<p><em>Jaccard similarity</em> is a simple but intuitive measure of similarity between two sets.</p>
-<p><span class="math display">\[J(doc_1, doc_2) = \frac{doc_1 \cap doc_2}{doc_1 \cup doc_2}\]</span> For documents we measure it as proportion of number of common words to number of unique words in both documets. In the field of NLP <em>jaccard similarity</em> can be particularly useful for duplicates detection. <em>text2vec</em> however provides generic efficient realization which can be used in many other applications.</p>
-<p>For calculation of <em>jaccard similarity</em> between 2 sets of documents user have to provide DTM for each them (DTMs should be in the same vector space!):</p>
+<!-- *Jaccard similarity* is a simple but intuitive measure of similarity between two sets. -->
+<p><em>Jaccard similarity</em> 是一个简单但是易懂的衡量相似性的方法。</p>
+<p><span class="math display">\[J(doc_1, doc_2) = \frac{doc_1 \cap doc_2}{doc_1 \cup doc_2}\]</span></p>
+<!-- For documents we measure it as proportion of number of common words to number of unique words in both documets. -->
+<p>对于每个文档，我们使用共有词汇占独立词汇的比例作为文档的衡量单位。</p>
+<!-- In the field of NLP *jaccard similarity* can be particularly useful for duplicates detection. *text2vec* however provides generic efficient realization which can be used in many other applications. -->
+<p>在 NLP 领域中，<em>jaccard similarity</em> 对于重复性检验十分有用。 <em>text2vec</em> 实现了一个通用高效的方法，可以运用在其他应用程序中。</p>
+<!-- For calculation of *jaccard similarity* between 2 sets of documents user have to provide DTM for each them (DTMs should be in the same vector space!): -->
+<p>为了计算两个文档的 <em>jaccard similarity</em> ，用户需要提供每个项目的 DTM，DTM 应该在同一个向量空间中。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># they will be in the same space because we use same vectorizer</span>
 <span class="co"># hash_vectorizer will also work fine</span>
 dtm1 =<span class="st"> </span><span class="kw">create_dtm</span>(it1, vectorizer)
@@ -429,9 +446,10 @@ dtm1 =<span class="st"> </span><span class="kw">create_dtm</span>(it1, vectorize
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dtm2 =<span class="st"> </span><span class="kw">create_dtm</span>(it2, vectorizer)
 <span class="kw">dim</span>(dtm2)</code></pre></div>
 <pre><code>## [1]  200 2339</code></pre>
-<p>Once we have representation of documents in vector space we are almost done. One thing remains - call <code>sim2()</code>:</p>
+<!-- Once we have representation of documents in vector space we are almost done. One thing remains - call `sim2()`: -->
+<p>一旦我们拥有文档在向量空间中的表示，我们只需要运行 <code>sim2()</code>：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_jac_sim =<span class="st"> </span><span class="kw">sim2</span>(dtm1, dtm2, <span class="dt">method =</span> <span class="st">&quot;jaccard&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
-<p>Check result:</p>
+<p>检查结果：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(d1_d2_jac_sim)</code></pre></div>
 <pre><code>## [1] 300 200</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_jac_sim[<span class="dv">1</span>:<span class="dv">2</span>, <span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
@@ -439,21 +457,33 @@ dtm1 =<span class="st"> </span><span class="kw">create_dtm</span>(it1, vectorize
 ##            1 2          3           4          5
 ## 1 0.02142857 . 0.02362205 0.007575758 0.02597403
 ## 2 0.01204819 . 0.02898551 0.013698630 0.02061856</code></pre>
-<p>Also we can comptute <em>“parallel”</em> similarity - similarity between corresponding rows of matrices (matrices should have identical shapes):</p>
+<!-- Also we can comptute *"parallel"* similarity - similarity between corresponding rows of matrices (matrices should have identical shapes): -->
+<p>我们也可以计算每一行的并行相似性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dtm1_2 =<span class="st"> </span>dtm1[<span class="dv">1</span>:<span class="dv">200</span>, ]
 dtm2_2 =<span class="st"> </span>dtm2[<span class="dv">1</span>:<span class="dv">200</span>, ]
 d1_d2_jac_psim =<span class="st"> </span><span class="kw">psim2</span>(dtm1_2, dtm2_2, <span class="dt">method =</span> <span class="st">&quot;jaccard&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;none&quot;</span>)
 <span class="kw">str</span>(d1_d2_jac_psim)</code></pre></div>
 <pre><code>##  Named num [1:200] 0.02143 0 0.00735 0 0.03311 ...
 ##  - attr(*, &quot;names&quot;)= chr [1:200] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...</code></pre>
-<p>We define <em>Jaccard distance</em> or <em>Jaccard dissimilarity</em> as <span class="math inline">\(1 - similarity(doc_1, doc_2)\)</span>. <code>sim2()</code> and <code>psim2()</code> have corresponding companion functions <code>dist2()</code>, <code>pdist2()</code> which computes dissimilarity. Note however that in many cases similarity between documents is 0. <code>sim2</code> function exploit this advantage - result matrix will be sparse. Use <code>dist2()</code> on large sparse matrices carefully.</p>
+<!-- We define *Jaccard distance* or *Jaccard dissimilarity*  as $1 - similarity(doc_1, doc_2)$. `sim2()` and `psim2()` have corresponding companion functions `dist2()`, `pdist2()` which computes dissimilarity. Note however that in many cases similarity between documents is 0. `sim2` function exploit this advantage - result matrix will be sparse. Use `dist2()` on large sparse matrices carefully. -->
+<p><code>sim2()</code> and <code>psim2()</code> 还有类似的函数 <code>dist2()</code>, <code>pdist2()</code> 用来计算不相似性。</p>
+<p>注意，绝大多数的例子的相似性为 0，这会导致结果较为稀疏，<code>sim2</code> 的输出矩阵是一个稀疏矩阵。</p>
+<p>对于大稀疏矩阵使用 <code>dist2()</code> 时需要格外小心。</p>
 </div>
 <div id="cosine-similarity" class="section level2">
 <h2>Cosine similarity</h2>
-<p>Classical approach from computational linguistics is to measure similarity based on the content overlap between documents. For this we will represent documents as bag-of-words, so each document will be a sparse vector. And define measure of overlap as angle between vectors: <span class="math display">\[similarity(doc_1, doc_2) = cos(\theta) = \frac{doc_1  doc_2}{\lvert doc_1\rvert \lvert doc_2\rvert}\]</span> By <em>cosine distance/dissimilarity</em> we assume following: <span class="math display">\[distance(doc_1, doc_2) = 1 - similarity(doc_1, doc_2)\]</span> It is important to note, however, that this is not a proper distance metric in a mathematical sense as it does not have the triangle inequality property and it violates the coincidence axiom.</p>
-<p>Calculation of cosine similarity is similar to jaccard similarity:</p>
+<!-- Classical approach from computational linguistics is to measure similarity based on the content overlap between documents. For this we will represent documents as bag-of-words, so each document will be a sparse vector. And define measure of overlap as angle between vectors: -->
+<p>传统的计算语义相似性的方法是使用内容的重合程度。为了达到这个目的，我们将文档以 bag-of-words 的形式表示，这样文档会成为一个稀疏矩阵，使用夹角来作为距离的量度。</p>
+<p><span class="math display">\[similarity(doc_1, doc_2) = cos(\theta) = \frac{doc_1  doc_2}{\lvert doc_1\rvert \lvert doc_2\rvert}\]</span></p>
+<!-- By *cosine distance/dissimilarity* we assume following: -->
+<p>余弦距离定义为：</p>
+<p><span class="math display">\[distance(doc_1, doc_2) = 1 - similarity(doc_1, doc_2)\]</span></p>
+<!-- It is important to note, however, that this is not a proper distance metric in a mathematical sense as it does not have the triangle inequality property and it violates the coincidence axiom. -->
+<p>注意，这不是一个严格的距离定义，因为它不满足三角不等式等条件。</p>
+<!-- Calculation of cosine similarity is similar to jaccard similarity: -->
+<p>计算余弦相似性和 jaccard similarity 类似。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_cos_sim =<span class="st"> </span><span class="kw">sim2</span>(dtm1, dtm2, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>)</code></pre></div>
-<p>Check result:</p>
+<p>检查结果：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(d1_d2_cos_sim)</code></pre></div>
 <pre><code>## [1] 300 200</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_cos_sim[<span class="dv">1</span>:<span class="dv">2</span>, <span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
@@ -463,11 +493,13 @@ d1_d2_jac_psim =<span class="st"> </span><span class="kw">psim2</span>(dtm1_2, d
 ## 2 0.02440658 . 0.06528840 0.034299717 0.03977196</code></pre>
 <div id="cosine-similarity-with-tf-idf" class="section level3">
 <h3>Cosine similarity with Tf-Idf</h3>
-<p>It can be useful to measure similarity not on vanilla bag-of-words matrix, but on transformed one. One choice is to apply tf-idf transformation. First let’t create tf-idf model:</p>
+<!-- It can be useful to measure similarity not on vanilla bag-of-words matrix, but on transformed one. One choice is to apply tf-idf transformation. First let't create tf-idf model: -->
+<p>我们也可以使用 Tf-Idf 来计算相似性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dtm =<span class="st"> </span><span class="kw">create_dtm</span>(it, vectorizer)
 tfidf =<span class="st"> </span>TfIdf$<span class="kw">new</span>()
 dtm_tfidf =<span class="st"> </span><span class="kw">fit_transform</span>(dtm, tfidf)</code></pre></div>
-<p>Calculate similarities between all rows of <code>dtm_tfidf</code> matrix:</p>
+<!-- Calculate similarities between all rows of `dtm_tfidf` matrix: -->
+<p>计算 <code>dtm_tfidf</code> 矩阵的相似性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_tfidf_cos_sim =<span class="st"> </span><span class="kw">sim2</span>(<span class="dt">x =</span> dtm_tfidf, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>)
 d1_d2_tfidf_cos_sim[<span class="dv">1</span>:<span class="dv">2</span>, <span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
 <pre><code>## 2 x 5 sparse Matrix of class &quot;dgCMatrix&quot;
@@ -477,30 +509,34 @@ d1_d2_tfidf_cos_sim[<span class="dv">1</span>:<span class="dv">2</span>, <span c
 </div>
 <div id="cosine-similarity-with-lsa" class="section level3">
 <h3>Cosine similarity with LSA</h3>
-<p>Usually tf-idf/bag-of-words matrices contain a lot of noise. Applying LSA model can help with this problem, so you can achieve better quality similarities:</p>
+<!-- Usually tf-idf/bag-of-words matrices contain a lot of noise. Applying LSA model can help with this problem, so you can achieve better quality similarities: -->
+<p>tf-idf/bag-of-words 模型有很多噪声，使用 LSA 模型可以帮助解决这个问题，你可以实现更高质量的相似性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lsa =<span class="st"> </span>LSA$<span class="kw">new</span>(<span class="dt">n_topics =</span> <span class="dv">100</span>)
 dtm_tfidf_lsa =<span class="st"> </span><span class="kw">fit_transform</span>(dtm_tfidf, lsa)</code></pre></div>
-<p>Calculate similarities between all rows of <code>dtm_tfidf_lsa</code> matrix:</p>
+<!-- Calculate similarities between all rows of `dtm_tfidf_lsa` matrix: -->
+<p>计算 <code>dtm_tfidf_lsa</code> 矩阵的相似性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d1_d2_tfidf_cos_sim =<span class="st"> </span><span class="kw">sim2</span>(<span class="dt">x =</span> dtm_tfidf_lsa, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>)
 d1_d2_tfidf_cos_sim[<span class="dv">1</span>:<span class="dv">2</span>, <span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
-<pre><code>##           1         2         3         4          5
-## 1 1.0000000 0.1699715 0.3688983 0.3209905 0.40136822
-## 2 0.1699715 1.0000000 0.2255630 0.0338627 0.05705758</code></pre>
-<p>And “parallel” similarities:</p>
+<pre><code>##           1         2         3          4          5
+## 1 1.0000000 0.1699811 0.3688836 0.32099516 0.40136353
+## 2 0.1699811 1.0000000 0.2255552 0.03386353 0.05705533</code></pre>
+<p>并行相似性：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span>dtm_tfidf_lsa[<span class="dv">1</span>:<span class="dv">250</span>, ]
 y =<span class="st"> </span>dtm_tfidf_lsa[<span class="dv">251</span>:<span class="dv">500</span>, ]
 <span class="kw">head</span>(<span class="kw">psim2</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>))</code></pre></div>
 <pre><code>##          1          2          3          4          5          6 
-## 0.21685059 0.19826088 0.30504565 0.10040222 0.29248788 0.03675778</code></pre>
+## 0.21685168 0.19825486 0.30505822 0.10039961 0.29248642 0.03675954</code></pre>
 </div>
 </div>
-<div id="euclidean-distance" class="section level2">
-<h2>Euclidean distance</h2>
-<p>Euclidean <strong>distance</strong> is not so useful in NLP field as Jaccard or Cosine similarities. But it always worth to try different measures. In text2vec it can by computed only on dense matrices, here is example:</p>
+<div class="section level2">
+<h2>欧式距离</h2>
+<!-- Euclidean **distance** is not so useful in NLP field as Jaccard or Cosine similarities. But it always worth to try different measures. In text2vec it can by computed only on dense matrices, here is example: -->
+<p>欧式距离在自然语言处理中不如 Jaccard 或者余弦相似性常用。但是我们仍然值得尝试不同的方法。text2vec 支持稠密矩阵的输入。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span>dtm_tfidf_lsa[<span class="dv">1</span>:<span class="dv">300</span>, ]
 y =<span class="st"> </span>dtm_tfidf_lsa[<span class="dv">1</span>:<span class="dv">200</span>, ]
 m1 =<span class="st"> </span><span class="kw">dist2</span>(x, y, <span class="dt">method =</span> <span class="st">&quot;euclidean&quot;</span>)</code></pre></div>
-<p>Also we can apply different row normalization techniques (by default was <code>&quot;l2&quot;</code> in example above):</p>
+<!-- Also we can apply different row normalization techniques (by default was `"l2"` in example above): -->
+<p>我们还可以使用 L2 正则化：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m2 =<span class="st"> </span><span class="kw">dist2</span>(x, y, <span class="dt">method =</span> <span class="st">&quot;euclidean&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l1&quot;</span>)
 m3 =<span class="st"> </span><span class="kw">dist2</span>(x, y, <span class="dt">method =</span> <span class="st">&quot;euclidean&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 </div>

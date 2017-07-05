@@ -1,5 +1,5 @@
 ---
-title: "GloVe Command Line Interface"
+title: "GloVe 命令行"
 author: "Dmitriy Selivanov"
 date: "`r Sys.Date()`"
 ---
@@ -7,20 +7,35 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo=TRUE, eval=FALSE, warning=FALSE, message=FALSE)
 ```
 
-For non-R users we provide CLI (command line interface) to GloVe algorithm. See separate repository - [text2vec-cli](https://github.com/dselivanov/text2vec-cli).
+<!-- For non-R users we provide CLI (command line interface) to GloVe algorithm. See separate repository - [text2vec-cli](https://github.com/dselivanov/text2vec-cli). -->
 
-Here is copy of README from `text2vec-cli`:
+非 R 用户可以使用命令行来使用 GloVe 算法，她在独立的仓库中，[text2vec-cli](https://github.com/dselivanov/text2vec-cli)。
 
-`text2vec-cli` made for those people who don't know R, but want to try alternative implementation of the GloVe algorithm. Compared to [original](https://github.com/stanfordnlp/GloVe) implemetation `text2vec` usually ~2 times faster. It is also can fit word embeddings model with `L1` regularization, which can be very useful for small datasets - algorithm can generalize much better than vanilla GloVe. 
+<!-- Here is copy of README from `text2vec-cli`: -->
 
-One possible limitation of `text2vec` is that it calculates co-occurence statistics in RAM. This **can be a problem for very large corpuses with very large vocabularies**. For example you can process english wikipedia dump with vocabulary consisting of 400000 unique terms and window=10 on machine with 32gb of RAM.
+这是 `text2vec-cli` 的 README 内容：
 
-# Installation
+<!-- `text2vec-cli` made for those people who don't know R, but want to try alternative implementation of the GloVe algorithm. Compared to [original](https://github.com/stanfordnlp/GloVe) implemetation `text2vec` usually ~2 times faster. It is also can fit word embeddings model with `L1` regularization, which can be very useful for small datasets - algorithm can generalize much better than vanilla GloVe. -->
+
+`text2vec-cli` 适用于不了解 R，但是希望使用 GloVe 其他实现的用户，相比于原有的实现，`text2vec` 的速度更快，是它的两倍。`text2vec` 同时使用了 L1 正则化，这对于小数据集十分有用，比单纯的 GloVe 具有更好的泛化性。
+
+<!-- One possible limitation of `text2vec` is that it calculates co-occurence statistics in RAM. This **can be a problem for very large corpuses with very large vocabularies**. For example you can process english wikipedia dump with vocabulary consisting of 400000 unique terms and window=10 on machine with 32gb of RAM. -->
+
+`text2vec` 的一个限制是，它在内存中计算共现统计量。这个对于大语料库来说可能是一个问题。比如，你可以在一个 32gb 的机器上使用 window=10 的设置来处理包含 400000 独立字段的英文 wikipedia 文本。
+
+<!-- # Installation -->
+
+# 安装
 
 ## R
-You need R 3.2+ be installed - check [CRAN](https://cran.r-project.org/) for instructions (should be very straightforward).
 
-For main linux distribultions it should be even simpler:
+<!-- You need R 3.2+ be installed - check [CRAN](https://cran.r-project.org/) for instructions (should be very straightforward). -->
+
+你需要安装 R 3.2+，参见 [CRAN](https://cran.r-project.org/) 。
+
+<!-- For main linux distribultions it should be even simpler: -->
+
+对于主流的 linux 发行版，安装则更为简单：
 
 ### Ubuntu
 
@@ -39,14 +54,19 @@ sudo apt-get install -y r-base r-base-dev
 
 ### Centos/Fedora/RHEL
 
-Need something similar to instructions above. See how to install fresh R (3.2+) [here](https://cran.r-project.org/bin/linux/redhat/README).
+<!-- Need something similar to instructions above. See how to install fresh R (3.2+) [here](https://cran.r-project.org/bin/linux/redhat/README). -->
+
+类似的步骤参见 [这里](https://cran.r-project.org/bin/linux/redhat/README)
+
 ```sh
 sudo yum install openssl-devel libcurl-openssl-devel R
 ```
 
 ## text2vec
 
-After R is installed clone this repo and make main scripts executable:
+<!-- After R is installed clone this repo and make main scripts executable: -->
+
+R 安装后，克隆这个仓库，同时将脚本设置为可执行的，
 
 ```sh
 git clone https://github.com/dselivanov/text2vec-cli.git
@@ -55,14 +75,20 @@ cd text2vec-cli
 chmod +x install.R vocabulary.R cooccurence.R glove.R analogy.R
 ```
 
-And install text2vec with dependencies:
+<!-- And install text2vec with dependencies: -->
+安装 text2vec：
+
 ```sh
 ./install.R
 ```
 
-# Usage
+<!-- # Usage -->
 
-### Shut up and show me the code
+# 使用
+
+<!-- ### Shut up and show me the code -->
+
+# 直接上代码！
 
 ```sh
 wget http://mattmahoney.net/dc/text8.zip
@@ -72,83 +98,140 @@ wget http://mattmahoney.net/dc/text8.zip
 ./analogy.R
 ```
 
-## Notes
+## 注意
 
-`text2vec-cli` is made for **non-R** users. We also assume that they are fluent in some another programming language and can preprocess input data using their favourite tools. 
+<!-- `text2vec-cli` is made for **non-R** users. We also assume that they are fluent in some another programming language and can preprocess input data using their favourite tools. -->
 
-Also in contrast to text2vec R packge which can use all cores for vocabulary creation and calculation of the  co-occurence statistics, `text2vec-cli` is single threaded (but GloVe training uses all available threads).
+`text2vec-cli` 是为非 R 用户设计的，我们假设他们熟悉自己的编程语言，并能够使用它们熟悉的工具来预处理输入数据。
 
-## Input data
+<!-- Also in contrast to text2vec R packge which can use all cores for vocabulary creation and calculation of the  co-occurence statistics, `text2vec-cli` is single threaded (but GloVe training uses all available threads). -->
 
-text2vec process data file by file. It **read each file into RAM**, process it and goes to next file. So if you text collection is in one large file (several gigs) we recommend to split it to chunks using standart unix `split` tool.
+同时，与 text2vec R包相比，`text2vec-cli` 是单线程的（除了 GloVe 训练时多线程的）。
 
-Example: your data is in single `BIG_FILE.gz`. In the following line we are:
+## 输入数据
 
-- unzipping it to stream and pass to pipe
+<!-- text2vec process data file by file. It **read each file into RAM**, process it and goes to next file. So if you text collection is in one large file (several gigs) we recommend to split it to chunks using standart unix `split` tool. -->
+
+text2vec 按行来处理数据文件，他将每个文件读入内存，处理文件，然后读取下一个文件。如果你的文本集是一个大文本，比如若干GB我们推荐使用 `split` 工具将它分割成区块。
+
+<!-- Example: your data is in single `BIG_FILE.gz`. In the following line we are: -->
+
+比如，你的数据是 `BIG_FILE.gz`：
+
+<!-- - unzipping it to stream and pass to pipe
 - split stream by lines with a constraint that each chunk should not be more than 100mb
-- pass each chunk to pipe, compress it back and save to disk
+- pass each chunk to pipe, compress it back and save to disk -->
+
+- 解压文件到流中，并将它输出到 pipe
+- 按行将流分解为不超过 100mb 的若干区块。
+- 将每个区块输出到 pipe 中，压缩并保存到磁盘中
 
 ```sh
 gunzip -c BIG_FILE.gz | split --line-bytes=100m --filter='gzip --fast > ./chunk_$FILE.gz'
 ```
 
-For OS X install `coreutils`: `brew install coreutils` and use `gsplit` instead of split.
+<!-- For OS X install `coreutils`: `brew install coreutils` and use `gsplit` instead of split. -->
 
-We assume:
+对于 OS X 用户，可以安装 `coreutils`：`brew install coreutils` 或者使用 `gsplit` 而不是 split。
 
-1. documents already preprocessed (lowercase, stemming, collocations, etc. - whatever user wan't). 
-1. each line in input files = sentence/document
-1. words/tokens are space separated
-1. Files ending in .gz, .bz2, .xz, or .zip will be automatically uncompressed. Files starting with http://, https://, ftp://, or ftps:// will be automatically downloaded. Remote gz files can also be automatically downloaded & decompressed.
+<!-- We assume: -->
 
-## Training
-To fit GloVe model user need to go through following steps.
+我们假设：
 
-### create vocabulary
+<!-- 1. documents already preprocessed (lowercase, stemming, collocations, etc. - whatever user wan't). -->
+<!-- 1. each line in input files = sentence/document -->
+<!-- 1. words/tokens are space separated -->
+<!-- 1. Files ending in .gz, .bz2, .xz, or .zip will be automatically uncompressed. Files starting with http://, https://, ftp://, or ftps:// will be automatically downloaded. Remote gz files can also be automatically downloaded & decompressed. -->
+
+1. 文档已经经过预处理（小写文本，词干化等）
+2. 输入文件等每一行代表一个文档。
+3. 词或者 tokens 使用空格分隔。
+4. 以 .gz, .bz2, .xz, .zip 可以自动解压。文件以 http://, https://, ftp://, 或者 ftps://
+
+<!-- ## Training -->
+
+## 训练
+
+<!-- To fit GloVe model user need to go through following steps. -->
+
+为了拟合 GloVe 模型，用户需要下面的步骤，
+
+### 生成词汇表
 
 ```sh
 ./vocabulary.R files=text8.zip vocab_file=vocab.rds
 ```
-Arguments: 
 
-1. `files` - filenames of input files.multiple input files can be provided to `files` argument - use comma `,` to concatenate names: `files=file1,file2`. 
-1. `dir`. Also can pass `dir` argument- all files from dir will be used.
-1. `vocab_file` - name of the output file
+<!-- Arguments: -->
 
-### create co-occurence statistics
+参数：
+
+<!-- 1. `files` - filenames of input files.multiple input files can be provided to `files` argument - use comma `,` to concatenate names: `files=file1,file2`.  -->
+<!-- 1. `dir`. Also can pass `dir` argument- all files from dir will be used. -->
+<!-- 1. `vocab_file` - name of the output file -->
+
+1. `files` - 输入文件的文件名 多个文件使用英文逗号进行分割 `files=file1,file2`。
+2. `dir` - 目录下的文件都会被使用
+3. `vocab_file` - 输出文件的文件名
+
+### 生成共现矩阵信息
 
 ```sh
 ./cooccurence.R files=text8.zip vocab_file=vocab.rds vocab_min_count=5 window_size=5 cooccurences_file=tcm.rds
 ```
 
-Arguments: 
+<!-- Arguments: -->
 
-1. `files` - filenames of input files.multiple input files can be provided to `files` argument - use comma `,` to concatenate names: `files=file1,file2`. 
+参数：
+
+<!--
+1. `files` - filenames of input files.multiple input files can be provided to `files` argument - use comma `,` to concatenate names: `files=file1,file2`.
 1. `dir`. Also can pass `dir` argument- all files from dir will be used.
 1. `vocab_file` - name of the vocabulary file
 1. `vocab_min_count` - prune vocanulary and use words thar appeared at least `vocab_min_count` times.
 1. `window_size` - how many neighbor words use for calculation of the co-occurence statistics
-1. `cooccurences_file` - name of the output file
+1. `cooccurences_file` - name of the output file -->
 
-### train GloVe model
+
+1. `files` - 输入文件的文件名 多个文件使用英文逗号进行分割 `files=file1,file2`。
+2. `dir` - 目录下的文件都会被使用
+3. `vocab_file` - 词汇表文件
+4. `vocab_min_count` - 删减词汇表，只使用出现超过指定次数的字段。
+5. `window_size` - 使用多少个临近的词汇用来计算共现信息。
+6. `cooccurences_file` - 输出文件
+
+### 训练 GloVe 模型
 
 ```sh
 ./glove.R cooccurences_file=tcm.rds word_vectors_size=50 iter=10 x_max=10 convergence_tol=0.01
 ```
 
-Arguments: 
+<!-- Arguments: -->
 
-1. `cooccurences_file` - name of the file with co-occurence statistics
-1. `word_vectors_size` - dimension of word embeddings
-1. `iter` - maximum number of iterations of optimization algorithm
+参数：
+
+<!-- 1. `cooccurences_file` - name of the file with co-occurence statistics  -->
+<!-- 1. `word_vectors_size` - dimension of word embeddings -->
+<!-- 1. `iter` - maximum number of iterations of optimization algorithm
 1. `x_max` - maximum value of co-occurence value. Corresponds to `X_MAX` in original implementation.
 1. `convergence_tol` - `0.01` by default. Stop training if improvement between epochs less than convergence_tol.
 1. `lambda` - L1 regularization coefficient. Ususally values from 1e-4 to 1e-5 are useful.
 1. `learning_rate` - `0.2` by default. Initial rate for AdaGrad. Not recommended to change.
 1. `clip_gradients` - `10` by default. Clip gradients with this value for numerical stability. Not recommended to change.
-1. `alpha` - `0.75` by default. 
+1. `alpha` - `0.75` by default. -->
 
-## check accuracy on word-analogy task
+1. `cooccurences_file` - 共现信息文件名
+1. `word_vectors_size` - 词向量的维度
+1. `iter` - 优化算法的迭代次数
+1. `x_max` - 最大共现值。与原有实现的 `X_MAX`对应。
+1. `convergence_tol` - `0.01` 默认值。若每个 epoch 的模型改进小于指定值，则停止训练。
+1. `lambda` - L1 正则化参数. 一般在 1e-4 到 1e-5 之间.
+1. `learning_rate` - `0.2` 默认值. AdaGrad 到初始速率. 不推荐修改。
+1. `clip_gradients` - `10` 默认值。用这个数值来裁剪梯度。不推荐修改。
+1. `alpha` - `0.75` 默认值。
+
+
+## 测试 word-analogy 任务的准确性
 
 ```sh
 ./analogy.R

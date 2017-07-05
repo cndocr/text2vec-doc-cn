@@ -11,9 +11,9 @@
 
 <meta name="author" content="Dmitriy Selivanov" />
 
-<meta name="date" content="2017-07-02" />
+<meta name="date" content="2017-07-05" />
 
-<title>GloVe Word Embeddings</title>
+<title>GloVe 词向量</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -358,40 +358,58 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">GloVe Word Embeddings</h1>
+<h1 class="title toc-ignore">GloVe 词向量</h1>
 <h4 class="author"><em>Dmitriy Selivanov</em></h4>
-<h4 class="date"><em>2017-07-02</em></h4>
+<h4 class="date"><em>2017-07-05</em></h4>
 
 </div>
 
 
-<div id="word-embeddings" class="section level1">
-<h1>Word embeddings</h1>
-<p>After Tomas Mikolov et al. released the <a href="https://code.google.com/p/word2vec/">word2vec</a> tool, there was a boom of articles about word vector representations. One of the best of these articles is Stanford’s <a href="http://nlp.stanford.edu/projects/glove/">GloVe: Global Vectors for Word Representation</a>, which explained why such algorithms work and reformulated word2vec optimizations as a special kind of factoriazation for word co-occurence matrices.</p>
-<p>Here I will briefly introduce the GloVe algorithm and show how to use its text2vec implementation.</p>
+<!-- # Word embeddings -->
+<div class="section level1">
+<h1>词向量</h1>
+<!-- After Tomas Mikolov et al. released the [word2vec](https://code.google.com/p/word2vec/) tool, there was a boom of articles about word vector representations. One of the best of these articles is Stanford's [GloVe: Global Vectors for Word Representation](http://nlp.stanford.edu/projects/glove/), which explained why such algorithms work and reformulated word2vec optimizations as a special kind of factoriazation for word co-occurence matrices. -->
+<p>Tomas Mikolov 等人发布了 <a href="https://code.google.com/p/word2vec/">word2vec</a> 工具之后，出现了一系列关于词向量表示的一系列文章。其中最出色的一篇是斯坦福大学的 <a href="http://nlp.stanford.edu/projects/glove/">GloVe: Global Vectors for Word Representation</a>。这个方法将 word2vec 的优化技术进行了改进，用一种特殊的 factoriazation 方法来处理词共现矩阵。</p>
+<!-- Here I will briefly introduce the GloVe algorithm and show how to use its text2vec implementation. -->
+<p>这里我会简要地介绍 GloVe 的算法，并演示如何使用 text2vec 的实现。</p>
 </div>
 <div id="glove-algorithm" class="section level1">
 <h1>GloVe algorithm</h1>
-<p>THe GloVe algorithm consists of following steps:</p>
+<!-- THe GloVe algorithm consists of following steps: -->
+<p>GloVe 算法包含以下步骤：</p>
+<!-- 1. Collect word cooccurence statistics in a form of word co-ocurrence matrix $X$. Each element $X_{ij}$ of such matrix represents how often word *i* appears in context of word *j*. Usually we scan our corpus in the following manner: for each term we look for context terms within some area defined by a *window_size* before the term and a *window_size* after the term. Also we give less weight for more distant words, usually using this formula: $$decay = 1/offset$$ -->
 <ol style="list-style-type: decimal">
-<li><p>Collect word cooccurence statistics in a form of word co-ocurrence matrix <span class="math inline">\(X\)</span>. Each element <span class="math inline">\(X_{ij}\)</span> of such matrix represents how often word <em>i</em> appears in context of word <em>j</em>. Usually we scan our corpus in the following manner: for each term we look for context terms within some area defined by a <em>window_size</em> before the term and a <em>window_size</em> after the term. Also we give less weight for more distant words, usually using this formula: <span class="math display">\[decay = 1/offset\]</span></p></li>
-<li><p>Define soft constraints for each word pair: <span class="math display">\[w_i^Tw_j + b_i + b_j = log(X_{ij})\]</span> Here <span class="math inline">\(w_i\)</span> - vector for the main word, <span class="math inline">\(w_j\)</span> - vector for the context word, <span class="math inline">\(b_i\)</span>, <span class="math inline">\(b_j\)</span> are scalar biases for the main and context words.</p></li>
-<li><p>Define a cost function <span class="math display">\[J = \sum_{i=1}^V \sum_{j=1}^V \; f(X_{ij}) ( w_i^T w_j + b_i + b_j - \log X_{ij})^2\]</span> Here <span class="math inline">\(f\)</span> is a weighting function which help us to prevent learning only from extremely common word pairs. The GloVe authors choose the following function:</p></li>
+<li>使用词共现矩阵收集词共现信息。每个 <span class="math inline">\(X_{ij}\)</span> 元素代表词汇 <em>i</em> 出现在词汇 <em>j</em>上下文的概率。一般我们需要扫描一遍我们的语料库：对于每一个字段，我们查看在这个字段之前或者之后，使用 <em>window_size</em> 定义的一定范围内的上下文。一个词距离这个字段越远，我们给予这个词的权重越低。一般使用这个公式： <span class="math display">\[decay = 1/offset\]</span></li>
 </ol>
+<!-- 2. Define soft constraints for each word pair:  $$w_i^Tw_j + b_i + b_j = log(X_{ij})$$ Here $w_i$ - vector for the main word, $w_j$ - vector for the context word, $b_i$, $b_j$ are scalar biases for the main and context words. -->
+<ol start="2" style="list-style-type: decimal">
+<li>对于每一组词对，<span class="math display">\[w_i^Tw_j + b_i + b_j = log(X_{ij})\]</span> 这里 <span class="math inline">\(w_i\)</span> 向量代表主词，<span class="math inline">\(w_j\)</span> 代表上下文词的向量。<span class="math inline">\(b_i\)</span>, <span class="math inline">\(b_j\)</span> 是主词和上下文词的常数偏倚。</li>
+</ol>
+<!-- 3. Define a cost function -->
+<ol start="3" style="list-style-type: decimal">
+<li>定义损失函数</li>
+</ol>
+<p><span class="math display">\[J = \sum_{i=1}^V \sum_{j=1}^V \; f(X_{ij}) ( w_i^T w_j + b_i + b_j - \log X_{ij})^2\]</span></p>
+<!-- Here $f$ is a weighting function which help us to prevent learning only from extremely common word pairs. The GloVe authors choose the following function: -->
+<p>这里 <span class="math inline">\(f\)</span> 是帮助我们避免只学习到常见词到一个权重函数。GloVe 到作者选择如下到函数：</p>
 <p><span class="math display">\[
-f(X_{ij}) = 
+f(X_{ij}) =
 \begin{cases}
 (\frac{X_{ij}}{x_{max}})^\alpha &amp; \text{if } X_{ij} &lt; XMAX \\
 1 &amp; \text{otherwise}
 \end{cases}
 \]</span></p>
+<!-- # Linguistic regularities -->
 </div>
-<div id="linguistic-regularities" class="section level1">
-<h1>Linguistic regularities</h1>
-<p>Now let’s examine how GloVe embeddings works. As commonly known, word2vec word vectors capture many linguistic regularities. To give the canonical example, if we take word vectors for the words “paris,” “france,” and “germany” and perform the following operation:</p>
+<div id="-linguistic-regularities" class="section level1">
+<h1>语义规则 Linguistic regularities</h1>
+<!-- Now let's examine how GloVe embeddings works. As commonly known, word2vec word vectors capture many linguistic regularities. To give the canonical example, if we take word vectors for the words "paris," "france," and "germany" and perform the following operation: -->
+<p>现在让我们来看一下 GloVe 词向量是怎么样工作的。一般来说，word2vec 词向量保留了语义规则。一个简单的例子，如果我们将 “paris,” “france,” and “germany” 进行下面的操作：</p>
 <p><span class="math display">\[vector(&quot;paris&quot;) - vector(&quot;france&quot;) + vector(&quot;germany&quot;)\]</span></p>
-<p>the resulting vector will be close to the vector for “rome.”</p>
-<p>Let’s download the same Wikipedia data used as a demo by word2vec:</p>
+<!-- the resulting vector will be close to the vector for "rome." -->
+<p>输出向量将会十分接近 “rome”。</p>
+<!-- Let's download the same Wikipedia data used as a demo by word2vec: -->
+<p>让我们来下载 Wikipedia 数据来展示 word2vec 的例子：</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(text2vec)
 text8_file =<span class="st"> &quot;~/text8&quot;</span>
 if (!<span class="kw">file.exists</span>(text8_file)) {
@@ -399,25 +417,31 @@ if (!<span class="kw">file.exists</span>(text8_file)) {
   <span class="kw">unzip</span> (<span class="st">&quot;~/text8.zip&quot;</span>, <span class="dt">files =</span> <span class="st">&quot;text8&quot;</span>, <span class="dt">exdir =</span> <span class="st">&quot;~/&quot;</span>)
 }
 wiki =<span class="st"> </span><span class="kw">readLines</span>(text8_file, <span class="dt">n =</span> <span class="dv">1</span>, <span class="dt">warn =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p>In the next step we will create a vocabulary, a set of words for which we want to learn word vectors. Note, that all of text2vec’s functions which operate on raw text data (<code>create_vocabulary</code>, <code>create_corpus</code>, <code>create_dtm</code>, <code>create_tcm</code>) have a streaming API and you should iterate over tokens as the first argument for these functions.</p>
+<!-- In the next step we will create a vocabulary, a set of words for which we want to learn word vectors. Note, that all of text2vec's functions which operate on raw text data (`create_vocabulary`, `create_corpus`, `create_dtm`, `create_tcm`) have a streaming API and you should iterate over tokens as the first argument for these functions. -->
+<p>在下一个步骤中，我们将会生成一个词汇表，一系列我们希望学习的词向量。注意到，所有 text2vec 函数在出文本数据上进行操作，<code>create_vocabulary</code>, <code>create_corpus</code>, <code>create_dtm</code>, <code>create_tcm</code>，这些函数有一个 streaming 流 API，你可以在第一个参数位置使用迭代器。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create iterator over tokens</span>
 tokens &lt;-<span class="st"> </span><span class="kw">space_tokenizer</span>(wiki)
 <span class="co"># Create vocabulary. Terms will be unigrams (simple words).</span>
 it =<span class="st"> </span><span class="kw">itoken</span>(tokens, <span class="dt">progressbar =</span> <span class="ot">FALSE</span>)
 vocab &lt;-<span class="st"> </span><span class="kw">create_vocabulary</span>(it)</code></pre></div>
-<p>These words should not be too uncommon. Fot example we cannot calculate a meaningful word vector for a word which we saw only once in the entire corpus. Here we will take only words which appear at least five times. text2vec provides additional options to filter vocabulary (see <code>?prune_vocabulary</code>).</p>
+<!-- These words should not be too uncommon. Fot example we cannot calculate a meaningful word vector for a word which we saw only once in the entire corpus. Here we will take only words which appear at least five times. text2vec provides additional options to filter vocabulary (see `?prune_vocabulary`). -->
+<p>这些词不能稀有词，比如对于一个只出现过一次的词，我们不能计算出一个有意义的词向量。这里我们只使用那些在整个文档中出现过至少 5 次的词。text2vec 提供了额外的用来筛选词汇的选项。（见 <code>?prune_vocabulary</code>）</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vocab &lt;-<span class="st"> </span><span class="kw">prune_vocabulary</span>(vocab, <span class="dt">term_count_min =</span> 5L)</code></pre></div>
-<p>Now we have 71,290 terms in the vocabulary and are ready to construct term-co-occurence matrix (TCM).</p>
+<!-- Now we have 71,290 terms in the vocabulary and are ready to construct term-co-occurence matrix (TCM). -->
+<p>现在词汇表有 71,290 个字段，我们可以开始构建字段共现矩阵 term-co-occurence matrix (TCM)。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Use our filtered vocabulary</span>
-vectorizer &lt;-<span class="st"> </span><span class="kw">vocab_vectorizer</span>(vocab, 
+vectorizer &lt;-<span class="st"> </span><span class="kw">vocab_vectorizer</span>(vocab,
                                <span class="co"># don&#39;t vectorize input</span>
-                               <span class="dt">grow_dtm =</span> <span class="ot">FALSE</span>, 
+                               <span class="dt">grow_dtm =</span> <span class="ot">FALSE</span>,
                                <span class="co"># use window of 5 for context words</span>
                                <span class="dt">skip_grams_window =</span> 5L)
 tcm &lt;-<span class="st"> </span><span class="kw">create_tcm</span>(it, vectorizer)</code></pre></div>
-<p>Now we have a TCM matrix and can factorize it via the GloVe algorithm.<br />
-text2vec uses a parallel stochastic gradient descent algorithm. By default it will use all cores on your machine, but you can specify the number of cores if you wish. For example, to use 4 threads call <code>RcppParallel::setThreadOptions(numThreads = 4)</code>.</p>
-<p>Let’s fit our model. (It can take several minutes to fit!)</p>
+<!-- Now we have a TCM matrix and can factorize it via the GloVe algorithm. -->
+<p>TCM 矩阵已经构建好了，我们可以使用 GloVe 算法来分解它。</p>
+<!-- text2vec uses a parallel stochastic gradient descent algorithm. By default it will use all cores on your machine, but you can specify the number of cores if you wish. For example, to use 4 threads call `RcppParallel::setThreadOptions(numThreads = 4)`. -->
+<p>text2vec 使用了一个并行随机梯度递降算法，默认它会使用机器上的所有核心，你也可以使用你所想要使用的核心数。比如，使用 4 线程，<code>RcppParallel::setThreadOptions(numThreads = 4)</code>。</p>
+<!-- Let's fit our model. (It can take several minutes to fit!) -->
+<p>让我们来拟合我们的模型，这可能会花上几分钟。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glove =<span class="st"> </span>GlobalVectors$<span class="kw">new</span>(<span class="dt">word_vectors_size =</span> <span class="dv">50</span>, <span class="dt">vocabulary =</span> vocab, <span class="dt">x_max =</span> <span class="dv">10</span>)
 glove$<span class="kw">fit</span>(tcm, <span class="dt">n_iter =</span> <span class="dv">20</span>)
 <span class="co"># 2016-10-03 10:09:14 - epoch 1, expected cost 0.0893</span>
@@ -440,21 +464,25 @@ glove$<span class="kw">fit</span>(tcm, <span class="dt">n_iter =</span> <span cl
 <span class="co"># 2016-10-03 10:10:02 - epoch 18, expected cost 0.0383</span>
 <span class="co"># 2016-10-03 10:10:05 - epoch 19, expected cost 0.0380</span>
 <span class="co"># 2016-10-03 10:10:08 - epoch 20, expected cost 0.0378</span></code></pre></div>
-<p>Alternatively we can train model with R’s <code>S3</code> interface (but keep in mind that all text2vec models are R6 classes and they are mutable! So <code>fit</code>, <code>fit_transform</code> methods modify models!):</p>
+<!-- Alternatively we can train model with R's `S3` interface (but keep in mind that all text2vec models are R6 classes and they are mutable! So `fit`, `fit_transform` methods modify models!): -->
+<p>或者我们也可以使用 R 的 S3 接口。（注意所有 text2vec 模型是 R6 类，他们是可变的，所以 <code>fit</code>, <code>fit_transform</code> 方法会修改模型 ）</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glove =<span class="st"> </span>GlobalVectors$<span class="kw">new</span>(<span class="dt">word_vectors_size =</span> <span class="dv">50</span>, <span class="dt">vocabulary =</span> vocab, <span class="dt">x_max =</span> <span class="dv">10</span>)
 <span class="co"># `glove` object will be modified by `fit()` call !</span>
 <span class="kw">fit</span>(tcm, glove, <span class="dt">n_iter =</span> <span class="dv">20</span>)</code></pre></div>
-<p>And now we get the word vectors:</p>
+<!-- And now we get the word vectors: -->
+<p>现在我们可以取得词向量。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">word_vectors &lt;-<span class="st"> </span>glove$<span class="kw">get_word_vectors</span>()</code></pre></div>
-<p>We can find the closest word vectors for our <em>paris - france + germany</em> example:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">berlin &lt;-<span class="st"> </span>word_vectors[<span class="st">&quot;paris&quot;</span>, , drop =<span class="st"> </span><span class="ot">FALSE</span>] -<span class="st"> </span>
-<span class="st">  </span>word_vectors[<span class="st">&quot;france&quot;</span>, , drop =<span class="st"> </span><span class="ot">FALSE</span>] +<span class="st"> </span>
+<!-- We can find the closest word vectors for our *paris - france + germany* example: -->
+<p>我们可以获得距离 <em>paris - france + germany</em> 最近的词向量。</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">berlin &lt;-<span class="st"> </span>word_vectors[<span class="st">&quot;paris&quot;</span>, , drop =<span class="st"> </span><span class="ot">FALSE</span>] -
+<span class="st">  </span>word_vectors[<span class="st">&quot;france&quot;</span>, , drop =<span class="st"> </span><span class="ot">FALSE</span>] +
 <span class="st">  </span>word_vectors[<span class="st">&quot;germany&quot;</span>, , drop =<span class="st"> </span><span class="ot">FALSE</span>]
 cos_sim =<span class="st"> </span><span class="kw">sim2</span>(<span class="dt">x =</span> word_vectors, <span class="dt">y =</span> berlin, <span class="dt">method =</span> <span class="st">&quot;cosine&quot;</span>, <span class="dt">norm =</span> <span class="st">&quot;l2&quot;</span>)
 <span class="kw">head</span>(<span class="kw">sort</span>(cos_sim[,<span class="dv">1</span>], <span class="dt">decreasing =</span> <span class="ot">TRUE</span>), <span class="dv">5</span>)
-<span class="co"># berlin     paris    munich    leipzig   germany </span>
-<span class="co"># 0.8015347 0.7623165 0.7013252 0.6616945 0.6540700 </span></code></pre></div>
-<p>You can achieve much better results by experimenting with <code>skip_grams_window</code> and the parameters of the <code>GloVe</code> class (including word vectors size and the number of iterations). For more details and large-scale experiments on wikipedia data see this <a href="http://dsnotes.com/blog/text2vec/2015/12/01/glove-enwiki/">old post</a> on my blog.</p>
+<span class="co"># berlin     paris    munich    leipzig   germany</span>
+<span class="co"># 0.8015347 0.7623165 0.7013252 0.6616945 0.6540700</span></code></pre></div>
+<!-- You can achieve much better results by experimenting with `skip_grams_window` and the parameters of the `GloVe` class (including word vectors size and the number of iterations). For more details and large-scale experiments on wikipedia data see this [old post](http://dsnotes.com/blog/text2vec/2015/12/01/glove-enwiki/) on my blog. -->
+<p>你可以使用 <code>skip_grams_window</code> 以及 <code>GloVe</code> 类的参数（包括词向量大小以及迭代次数）来获得更好的结果。更多细节可以参考我的这篇 <a href="http://dsnotes.com/blog/text2vec/2015/12/01/glove-enwiki/">历史博文</a>。</p>
 </div>
 
 

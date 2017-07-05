@@ -334,11 +334,21 @@ div.tocify {
 * **Flexible** - allow to easily solve complex tasks;
 * **Fast** - maximize efficiency per single thread, transparently scale to multiple threads on multicore machines;
 * **Memory efficient** - use streams and iterators, not keep data in RAM if possible.-->
+<p>为了实现下面的目标，我们开发了 <code>text2vec</code>：</p>
+<ul>
+<li><strong>简洁</strong> - 暴露尽可能少的函数</li>
+<li><strong>统一</strong> - 暴露统一的接口，不需要为了每一个任务而探索新的接口</li>
+<li><strong>灵活</strong> - 允许很容易地解决复杂的任务</li>
+<li><strong>快速</strong> - 最高效地利用每一个进程的，透明地在多核机器上扩容到多进程。</li>
+<li><strong>内存高效</strong> - 使用流和迭代器，尽可能减少内存中的数据。</li>
+</ul>
 <!--Conceptually we can divide API into several pieces:-->
-<div id="vectorization" class="section level2">
-<h2>Vectorization</h2>
-<p>See <a href="vectorization.html">Vectorization</a> section for details.</p>
-<p><code>create_*</code> family functions, <code>vocab_vectorizer()</code> and <code>hash_vectorizer()</code> are made to create vocabularies, Document-Term matrices and Term co-occurence matrices. Simply this family of functions is in charge of converting text into numeric form. Main functions are:</p>
+<p>从概念上，我们可以把 API 分成以下几个部分：</p>
+<div class="section level2">
+<h2>向量化</h2>
+<p>参见 <a href="vectorization.html">向量化</a>.</p>
+<p><code>create_*</code> 系列函数, <code>vocab_vectorizer()</code> and <code>hash_vectorizer()</code> 被用来生成词汇表，Document-Term matrices，Term co-occurence matrices。这些函数负责将文本转换为数字的形式。</p>
+<!-- are made to create vocabularies, Document-Term matrices and Term co-occurence matrices. Simply this family of functions is in charge of converting text into numeric form. Main functions are: -->
 <ul>
 <li><code>create_vocabulary()</code>;</li>
 <li><code>create_dtm()</code>;</li>
@@ -346,53 +356,69 @@ div.tocify {
 <li><code>vocab_vectorizer()</code>, <code>hash_vectorizer()</code>.</li>
 </ul>
 </div>
-<div id="io-handling." class="section level2">
-<h2>I/O handling.</h2>
-<p>All functions from <code>create_*</code> family work with <strong>iterators</strong> over tokens as input. Good examples for creation of such iterators are:</p>
+<div id="io-" class="section level2">
+<h2>I/O 处理</h2>
+<!-- All functions from `create_*` family work with **iterators** over tokens as input. Good examples for creation of such iterators are: -->
+<p>所有 <code>create_*</code> 函数支持 tokens 的迭代器作为输入。例子如下：</p>
+<!-- * `itoken()` for creation iterator over tokens; -->
+<!-- * `ifiles()` for creation iterator over files. Note that text2vec doesn't handle I/O, users should provide their own reader function (`data.table::fread()` and functions from `readr` package usually are good choices). -->
 <ul>
-<li><code>itoken()</code> for creation iterator over tokens;</li>
-<li><code>ifiles()</code> for creation iterator over files. Note that text2vec doesn’t handle I/O, users should provide their own reader function (<code>data.table::fread()</code> and functions from <code>readr</code> package usually are good choices).</li>
+<li><code>itoken()</code> 用来生成 tokens 的迭代器</li>
+<li><code>ifiles()</code> 用来生成文件迭代器。注意， text2vec 不处理文件输入输出，用户需要提供自定义的读取函数，比如 <code>data.table::fread()</code> 或者 <code>readr</code> 包。</li>
 </ul>
-<p>Once user needs some custom source (for example data stream from some RDBMS), he/she just needs to create correct iterator over tokens.</p>
+<!-- Once user needs some custom source (for example data stream from some RDBMS), he/she just needs to create correct iterator over tokens. -->
+<p>如果用户需要自定义文件来源，比如从数据库导入数据，用户可以自定义自己的迭代器函数</p>
 </div>
-<div id="models" class="section level2">
-<h2>Models</h2>
-<p>text2vec provides unified interface for models, which is inspired by <code>scikit-learn</code> interface. Models in text2vec are mostly <em>transformers</em> - they transform Document-Term matrix. Models include:</p>
+<div class="section level2">
+<h2>模型</h2>
+<!-- text2vec provides unified interface for models, which is inspired by `scikit-learn` interface. Models in text2vec are mostly *transformers* - they transform Document-Term matrix. Models include: -->
+<p>text2vec 提供统一的模型接口，与 <code>scikit-learn</code> 类似。text2vec 模型是可转换的，</p>
+<!-- * Tf-idf reweighting. See [Tf-idf in vectorization](vectorization.html#tf-idf) section;
+* Global Vectors (**GloVe**) word embeddings. See [Word Embeddings](glove.html) section;
+* Latent Semantic Analysis (**LSA**). See [LSA](topic_modeling.html#latent_semantic_analysis) section;
+* Latent Dirichlet Allocation (**LDA**). See [LDA](topic_modeling.html#latent_dirichlet_allocation) section. -->
 <ul>
-<li>Tf-idf reweighting. See <a href="vectorization.html#tf-idf">Tf-idf in vectorization</a> section;</li>
-<li>Global Vectors (<strong>GloVe</strong>) word embeddings. See <a href="glove.html">Word Embeddings</a> section;</li>
-<li>Latent Semantic Analysis (<strong>LSA</strong>). See <a href="topic_modeling.html#latent_semantic_analysis">LSA</a> section;</li>
-<li>Latent Dirichlet Allocation (<strong>LDA</strong>). See <a href="topic_modeling.html#latent_dirichlet_allocation">LDA</a> section.</li>
+<li>Tf-idf 重计算. 参考 <a href="vectorization.html#tf-idf">向量化 Tf-idf 章节</a>;</li>
+<li>Global Vectors (<strong>GloVe</strong>) word embeddings. 参见 <a href="glove.html">GloVe 章节</a>;</li>
+<li>Latent Semantic Analysis (<strong>LSA</strong>). 参见 <a href="topic_modeling.html#latent_semantic_analysis">LSA</a></li>
+<li>Latent Dirichlet Allocation (<strong>LDA</strong>). 参见 <a href="topic_modeling.html#latent_dirichlet_allocation">LDA</a></li>
 </ul>
-<p><strong>All text2vec models are mutable! This means that <code>fit()</code> and <code>fit_transform()</code> methods change model which was provided as argument.</strong></p>
-<div id="important-verbs" class="section level3">
-<h3>Important verbs</h3>
-<p>All models have unified interface. User should only remember few verbs for models manipulation:</p>
+<!-- **All text2vec models are mutable! This means that `fit()` and `fit_transform()` methods change model which was provided as argument.** -->
+<p>所有 text2vec 模型都是可变的，这意味着 <code>fit()</code> 和 <code>fit_transform()</code> 方法将会根据指定参数修改模型。</p>
+<div class="section level3">
+<h3>重要的动词</h3>
+<!-- All models have unified interface. User should only remember few verbs for models manipulation: -->
+<p>所有的模型都有统一的借口，这里有一些重要的动词用来进行模型的处理：</p>
+<!-- * `model$new(...)` - create model object, set up initial parameters for model. This is model-specific. For example for LDA it can be number of topics $K$, alpha($\alpha$) and eta($\eta$) priors;
+* `model$fit(x, ...)` - fits model to data;
+* `model$fit_transform(x, ...)` - fits model to data and then transforms data with fitted model;
+* `model$transform(x_new, ...)` - transforms new data with pretrained model. -->
 <ul>
-<li><code>model$new(...)</code> - create model object, set up initial parameters for model. This is model-specific. For example for LDA it can be number of topics <span class="math inline">\(K\)</span>, alpha(<span class="math inline">\(\alpha\)</span>) and eta(<span class="math inline">\(\eta\)</span>) priors;</li>
-<li><code>model$fit(x, ...)</code> - fits model to data;</li>
-<li><code>model$fit_transform(x, ...)</code> - fits model to data and then transforms data with fitted model;</li>
-<li><code>model$transform(x_new, ...)</code> - transforms new data with pretrained model.</li>
+<li><code>model$new(...)</code> - 生成一个模型对象，设置初始化参数。这些参数是模型相关的，比如 LDA 模型需要设置主题数 k，alpha 和 eta 先验。</li>
+<li><code>model$fit(x, ...)</code> - 拟合模型</li>
+<li><code>model$fit_transform(x, ...)</code> - 拟合模型并转换数据</li>
+<li><code>model$transform(x_new, ...)</code> - 使用已经训练好的模型转换数据。</li>
 </ul>
 </div>
 </div>
-<div id="distances" class="section level2">
-<h2>Distances</h2>
-<p>See <a href="distances.html">Distances</a> section for details.</p>
-<p>text2vec package provides 2 set of functions for measuring various distances/similarity in a unified way. All methods are written with special attention to computational performance and memory efficiency.</p>
+<div class="section level2">
+<h2>距离</h2>
+<p>参见 <a href="distances.html">Distances</a> .</p>
+<!-- text2vec package provides 2 set of functions for measuring various distances/similarity in a unified way. All methods are written with special attention to computational performance and memory efficiency. -->
+<p>text2vec 包提供了两套函数用来评价多种距离和相似性。所有函数都十分关注计算性能和内存的效率：</p>
 <ol style="list-style-type: decimal">
-<li><code>sim2(x, y, method)</code> - calculates similarity between <strong>each row</strong> of matrix <code>x</code> and <strong>each row</strong> of matrix <code>y</code> using given <code>method</code>.</li>
-<li><code>psim2(x, y, method)</code> - calculates <strong>p</strong>arallel similarity between rows of matrix <code>x</code> and <strong>corresponding</strong> rows of matrix <code>y</code> using given <code>method.</code></li>
-<li><code>dist2(x, y, method)</code> - calculates distance/dissimilarity between <strong>each row</strong> of matrix <code>x</code> and <strong>each row</strong> of matrix <code>y</code> using given <code>method</code>.</li>
-<li><code>pdist2(x, y, method)</code> - calculates <strong>p</strong>arallel distance/dissimilarity between rows of matrix <code>x</code> and <strong>corresponding</strong> rows of matrix <code>y</code> using given <code>method.</code></li>
+<li><code>sim2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的使用指定方法的相似性</li>
+<li><code>psim2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的并行相似性。</li>
+<li><code>dist2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的使用指定方法的距离</li>
+<li><code>dist2(x, y, method)</code> - 计算两个矩阵，x和y，每一行的使用指定方法的并行距离</li>
 </ol>
-<p>Distances/similarities implemented at the moment:</p>
-<ul>
-<li>Cosine</li>
-<li>Jaccard</li>
-<li>Euclidean</li>
-<li>Relaxed Word Mover’s Distance</li>
-</ul>
+<p>下面的方法已经实现了：</p>
+<ol style="list-style-type: decimal">
+<li><em>Jaccard 距离</em></li>
+<li><em>余弦距离</em></li>
+<li><em>欧式距离</em></li>
+<li><em>Relaxed Word Mover’s Distance</em></li>
+</ol>
 </div>
 </div>
 
