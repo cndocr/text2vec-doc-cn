@@ -41,7 +41,7 @@ $$J = \sum_{i=1}^V \sum_{j=1}^V \; f(X_{ij}) ( w_i^T w_j + b_i + b_j - \log X_{i
 
 <!-- Here $f$ is a weighting function which help us to prevent learning only from extremely common word pairs. The GloVe authors choose the following function: -->
 
-这里 $f$ 是帮助我们避免只学习到常见词到一个权重函数。GloVe 的作者选择如下的函数：
+这里 $f$ 是帮助我们避免只学习到常见词的一个权重函数。GloVe 的作者选择如下的函数：
 
 $$
 f(X_{ij}) =
