@@ -27,7 +27,7 @@ GloVe 算法包含以下步骤：
 
 <!-- 1. Collect word cooccurence statistics in a form of word co-ocurrence matrix $X$. Each element $X_{ij}$ of such matrix represents how often word *i* appears in context of word *j*. Usually we scan our corpus in the following manner: for each term we look for context terms within some area defined by a *window_size* before the term and a *window_size* after the term. Also we give less weight for more distant words, usually using this formula: $$decay = 1/offset$$ -->
 
-1. 使用词共现矩阵收集词共现信息。每个 $X_{ij}$ 元素代表词汇 *i* 出现在词汇 *j*上下文的概率。一般我们需要扫描一遍我们的语料库：对于每一个字段，我们查看在这个字段之前或者之后，使用 *window_size* 定义的一定范围内的上下文。一个词距离这个字段越远，我们给予这个词的权重越低。一般使用这个公式： $$decay = 1/offset$$
+1. 使用词共现矩阵 $X$ 收集词共现信息。每个 $X_{ij}$ 元素代表词汇 *i* 出现在词汇 *j*上下文的概率。一般我们需要扫描一遍我们的语料库：对于每一个字段，我们查看在这个字段之前或者之后，使用 *window_size* 定义的一定范围内的上下文。一个词距离这个字段越远，我们给予这个词的权重越低。一般使用这个公式： $$decay = 1/offset$$
 
 <!-- 2. Define soft constraints for each word pair:  $$w_i^Tw_j + b_i + b_j = log(X_{ij})$$ Here $w_i$ - vector for the main word, $w_j$ - vector for the context word, $b_i$, $b_j$ are scalar biases for the main and context words. -->
 
@@ -41,7 +41,7 @@ $$J = \sum_{i=1}^V \sum_{j=1}^V \; f(X_{ij}) ( w_i^T w_j + b_i + b_j - \log X_{i
 
 <!-- Here $f$ is a weighting function which help us to prevent learning only from extremely common word pairs. The GloVe authors choose the following function: -->
 
-这里 $f$ 是帮助我们避免只学习到常见词到一个权重函数。GloVe 到作者选择如下到函数：
+这里 $f$ 是帮助我们避免只学习到常见词到一个权重函数。GloVe 的作者选择如下的函数：
 
 $$
 f(X_{ij}) =
